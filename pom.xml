@@ -12,7 +12,7 @@
 
     <groupId>org.codingmatters.poom.ci</groupId>
     <artifactId>poom-crons</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Poor Man's Crontab</name>
@@ -58,6 +58,7 @@
 
 
     <modules>
+
     </modules>
 
     <dependencies>
