@@ -6,11 +6,20 @@ participant "Cronned API" as cronned
 
 == Client schedules a task specification ==
 
-client -> crontab: POST /account/crontab/ \n [task={url, body, scheduledAt}]
+client -> crontab: POST /account/crontab/ \n \
+        [task={url, body, schedulingSpec: {\n\
+                type: AT | EVERY\n\
+                minute, hours, dayOfWeek, dayOfMonth, dayOfYear\
+                \n\
+        }}]
 activate crontab
-    crontab -> crontab: validates and stores task
+    alt task is valid
+        crontab -> crontab: stores task
+        client <-- crontab: 201 : [task]
+    else
+        client <-- crontab: 400 : [Error]
+    end
 deactivate crontab
-client <-- crontab: 201 : [task]
 
 ...
 

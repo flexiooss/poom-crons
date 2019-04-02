@@ -10,7 +10,7 @@
         <version>1.3.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.codingmatters.poom.ci</groupId>
+    <groupId>org.codingmatters.poom.crons</groupId>
     <artifactId>poom-crons</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -58,7 +58,9 @@
 
 
     <modules>
-
+        <module>poom-crons-api-spec</module>
+        <module>poom-crons-api</module>
+        <module>poom-crons-domain</module>
     </modules>
 
     <dependencies>
@@ -79,6 +81,16 @@
             </dependency>
 
             <!--BOM-->
+            <dependency>
+                <groupId>org.codingmatters.poom.crons</groupId>
+                <artifactId>poom-crons-api-spec</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codingmatters.poom.crons</groupId>
+                <artifactId>poom-crons-api</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
             <!--// BOM-->
         </dependencies>
     </dependencyManagement>
