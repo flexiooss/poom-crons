@@ -1,0 +1,49 @@
+@startuml
+
+participant "Client" as client
+participant "Crontab API" as crontab
+participant "Cronned API" as cronned
+
+== Client schedules a task specification ==
+
+client -> crontab: POST /account/crontab/ \n [task={url, body, scheduledAt}]
+activate crontab
+    crontab -> crontab: validates and stores task
+deactivate crontab
+client <-- crontab: 201 : [task]
+
+...
+
+== Crontab triggers cronned API ==
+
+crontab -> crontab: at fixed rate
+activate crontab
+    loop stored task specifications : task
+        alt task.scheduledAt is triggerable
+            crontab -> cronned: POST task.url \n[task.body]
+            activate cronned
+            crontab <-- cronned: 204
+            deactivate cronned
+        end
+    end
+deactivate crontab
+
+...
+
+== Cronned Task is unscheduled when Cronned API invalidates call (with 410 Gone status) ==
+
+crontab -> crontab: at fixed rate
+activate crontab
+    loop stored task specifications : task
+        alt task.scheduledAt is triggerable
+            crontab -> cronned: POST task.url \n[task.body]
+            activate cronned
+            crontab <-- cronned: 410 Gone
+            deactivate cronned
+            crontab -> crontab: remove task
+
+        end
+    end
+deactivate crontab
+
+@enduml
