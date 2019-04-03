@@ -27,17 +27,64 @@ public class TaskSpecValidator {
             ) {
                 return TaskSpecValidation.invalidSpec("when providing an at expression, must at least provide one at field");
             }
+
+            if(this.spec.opt().scheduled().at().dayOfWeek().isPresent() &&
+                    (this.spec.scheduled().opt().at().dayOfMonth().isPresent() || this.spec.scheduled().opt().at().dayOfYear().isPresent())) {
+                return TaskSpecValidation.invalidSpec("for an at expression, when providing a day-of constraint, cannot provide another");
+            }
+            if(this.spec.opt().scheduled().at().dayOfMonth().isPresent() &&
+                    (this.spec.scheduled().opt().at().dayOfWeek().isPresent() || this.spec.scheduled().opt().at().dayOfYear().isPresent())) {
+                return TaskSpecValidation.invalidSpec("for an at expression, when providing a day-of constraint, cannot provide another");
+            }
+            if(this.spec.opt().scheduled().at().dayOfYear().isPresent() &&
+                    (this.spec.scheduled().opt().at().dayOfWeek().isPresent() || this.spec.scheduled().opt().at().dayOfMonth().isPresent())) {
+                return TaskSpecValidation.invalidSpec("for an at expression, when providing a day-of constraint, cannot provide another");
+            }
+
+            if(this.spec.opt().scheduled().at().dayOfMonth().isPresent() &&
+                    (! this.spec.opt().scheduled().at().hourOfDay().isPresent() || ! this.spec.opt().scheduled().at().minuteOfHours().isPresent())) {
+                return TaskSpecValidation.invalidSpec("for an at expression, when providing a day-of-month, must provide an hour-of-day and a minute-of-hour");
+            }
+            if(this.spec.opt().scheduled().at().hourOfDay().isPresent() &&
+                    ! this.spec.opt().scheduled().at().minuteOfHours().isPresent()) {
+                return TaskSpecValidation.invalidSpec("for an at expression, when providing an hour-of-day, must provide a minute-of-hour");
+            }
+
+            if(this.spec.opt().scheduled().at().dayOfYear().isPresent()) {
+                if(this.spec.scheduled().at().dayOfYear() < 1 || this.spec.scheduled().at().dayOfYear() > 366) {
+                    return TaskSpecValidation.invalidSpec("when providing a day-of-year constraint, must be in 1-366 range");
+                }
+            }
+            if(this.spec.opt().scheduled().at().dayOfMonth().isPresent()) {
+                if(this.spec.scheduled().at().dayOfMonth() < 1 || this.spec.scheduled().at().dayOfMonth() > 31) {
+                    return TaskSpecValidation.invalidSpec("when providing a day-of-month constraint, must be in 1-31 range");
+                }
+            }
+            if(this.spec.opt().scheduled().at().hourOfDay().isPresent()) {
+                if(this.spec.scheduled().at().hourOfDay() < 0 || this.spec.scheduled().at().hourOfDay() > 23) {
+                    return TaskSpecValidation.invalidSpec("when providing a hour-of-day constraint, must be in 0-23 range");
+                }
+            }
+            if(this.spec.opt().scheduled().at().minuteOfHours().isPresent()) {
+                if(this.spec.scheduled().at().minuteOfHours() < 0 || this.spec.scheduled().at().minuteOfHours() > 59) {
+                    return TaskSpecValidation.invalidSpec("when providing a minute-of-hours constraint, must be in 0-59 range");
+                }
+            }
         }
         if(this.spec.opt().scheduled().every().isPresent()) {
             if(! this.spec.opt().scheduled().every().startingAt().isPresent()) {
                 return TaskSpecValidation.invalidSpec("when providing an every expression, must at least provide a starting-at field");
             }
-            if(!(this.spec.opt().scheduled().every().minutes().isPresent() ||
-                    this.spec.opt().scheduled().every().hours().isPresent() ||
-                    this.spec.opt().scheduled().every().days().isPresent() ||
-                    this.spec.opt().scheduled().every().months().isPresent() ||
-                    this.spec.opt().scheduled().every().years().isPresent())) {
-                return TaskSpecValidation.invalidSpec("when providing an every expression, must at least provide another field than starting-at field");
+            int fieldDefined = 0;
+            fieldDefined += this.spec.opt().scheduled().every().minutes().isPresent() ? 1 : 0;
+            fieldDefined += this.spec.opt().scheduled().every().hours().isPresent() ? 1 : 0;
+            fieldDefined += this.spec.opt().scheduled().every().days().isPresent() ? 1 : 0;
+            fieldDefined += this.spec.opt().scheduled().every().months().isPresent() ? 1 : 0;
+            fieldDefined += this.spec.opt().scheduled().every().years().isPresent() ? 1 : 0;
+            if(fieldDefined == 0) {
+                return TaskSpecValidation.invalidSpec("when providing an every expression, must provide a field (beside starting-at)");
+            } else if(fieldDefined > 1) {
+                return TaskSpecValidation.invalidSpec("when providing an every expression, cannot provide more than one field (beside starting-at)");
             }
         }
         return TaskSpecValidation.validSpec();
