@@ -61,6 +61,7 @@
         <module>poom-crons-api-spec</module>
         <module>poom-crons-api</module>
         <module>poom-crons-domain</module>
+        <module>poom-crons-service</module>
     </modules>
 
     <dependencies>
