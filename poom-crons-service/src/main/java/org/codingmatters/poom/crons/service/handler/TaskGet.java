@@ -11,12 +11,12 @@ import org.codingmatters.poom.servives.domain.entities.Entity;
 
 import java.util.function.Function;
 
-public class GetTask implements Function<TaskGetRequest, TaskGetResponse> {
-    static private final CategorizedLogger log = CategorizedLogger.getLogger(GetTask.class);
+public class TaskGet implements Function<TaskGetRequest, TaskGetResponse> {
+    static private final CategorizedLogger log = CategorizedLogger.getLogger(TaskGet.class);
 
     private final Function<String, Repository<Task, Void>> repositoryForAccount;
 
-    public GetTask(Function<String, Repository<Task, Void>> repositoryForAccount) {
+    public TaskGet(Function<String, Repository<Task, Void>> repositoryForAccount) {
         this.repositoryForAccount = repositoryForAccount;
     }
 
@@ -26,6 +26,7 @@ public class GetTask implements Function<TaskGetRequest, TaskGetResponse> {
         try {
             Entity<Task> task = repository.retrieve(request.taskId());
             if(task != null) {
+                log.audit().info("returning requested task {}", task);
                 return TaskGetResponse.builder()
                         .status200(status -> status
                                 .xEntityId(task.id())
