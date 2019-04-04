@@ -96,6 +96,11 @@ types:
   Task:
     type: object
     properties:
+      id:
+        type: string
+        (value-object-hint):
+           - mongo:object-id
+           - mongo:field(_id)
       spec: TaskSpec
       last-trig: datetime-only
       error-count: number
@@ -151,3 +156,7 @@ traits:
        500:
          description: UNEXPECTED_ERROR.
          body: Error
+
+annotationTypes:
+   value-object-hint:
+      type: string[]
