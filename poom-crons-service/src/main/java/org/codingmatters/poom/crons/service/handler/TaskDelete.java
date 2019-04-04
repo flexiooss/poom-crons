@@ -28,7 +28,7 @@ public class TaskDelete implements Function<TaskDeleteRequest, TaskDeleteRespons
             Entity<Task> task = repository.retrieve(request.taskId());
             if(task != null) {
                 repository.delete(task);
-                log.info("deleted task {}", task);
+                log.audit().info("deleted task {}", task);
                 return TaskDeleteResponse.builder()
                         .status204(Status204.builder().build())
                         .build();
