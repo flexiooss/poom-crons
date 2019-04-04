@@ -13,12 +13,6 @@
     <artifactId>poom-crons-service</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
 
-
-    <properties>
-        <docker.image.namespace>${codingmatters.docker.namespace}</docker.image.namespace>
-        <service.class.name>org.codingmatters.poom.crons.service.CrontabService</service.class.name>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.codingmatters.poom.crons</groupId>
