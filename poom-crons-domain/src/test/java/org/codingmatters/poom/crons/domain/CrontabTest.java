@@ -1,0 +1,105 @@
+package org.codingmatters.poom.crons.domain;
+
+import org.codingmatters.poom.crons.crontab.api.types.Task;
+import org.codingmatters.poom.crons.crontab.api.types.TaskSpec;
+import org.codingmatters.poom.services.domain.exceptions.RepositoryException;
+import org.codingmatters.poom.services.domain.repositories.Repository;
+import org.codingmatters.poom.services.domain.repositories.inmemory.InMemoryRepository;
+import org.codingmatters.poom.servives.domain.entities.Entity;
+import org.codingmatters.poom.servives.domain.entities.PagedEntityList;
+import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+public class CrontabTest {
+
+    private final HashMap<String, Repository<Task, Void>> accountRepositries = new HashMap<>();
+    private final Crontab crontab = new Crontab(account -> {
+        accountRepositries.putIfAbsent(account, new InMemoryRepository<Task, Void>() {
+                @Override
+                public PagedEntityList<Task> search(Void query, long startIndex, long endIndex) throws RepositoryException {
+                    return this.all(startIndex, endIndex);
+                }
+            });
+        return accountRepositries.get(account);
+    });
+    private ForkJoinPool forkJoinPool = new ForkJoinPool(4);
+
+    @Test
+    public void givenRepositoryForAccount__whenCreatingTask__thenTaskAddedToCrontab() throws Exception {
+        Repository<Task, Void> accountRepository = this.crontab.forAccount("account");
+        Entity<Task> task = accountRepository.create(Task.builder().spec(spec -> spec.url("created")).build());
+
+        assertThat(this.crontab.tasks(), hasSize(1));
+        assertThat(this.crontab.tasks().get(0).id(), is("account/" + task.id()));
+        assertThat(this.crontab.tasks().get(0).value(), is(task.value()));
+    }
+
+    @Test
+    public void givenRepositoryForAccount__whenUpdatingTask__thenTaskUpdatedInCrontab() throws Exception {
+        Repository<Task, Void> accountRepository = this.crontab.forAccount("account");
+        Entity<Task> task = accountRepository.create(Task.builder().spec(spec -> spec.url("created")).build());
+
+        accountRepository.update(task, task.value().withSpec(TaskSpec.builder().url("modified").build()));
+
+        assertThat(this.crontab.tasks(), hasSize(1));
+        assertThat(this.crontab.tasks().get(0).value().spec().url(), is("modified"));
+    }
+
+    @Test
+    public void givenRepositoryForAccount__whenDeletingTask__thenTaskDeletedInCrontab() throws Exception {
+        Repository<Task, Void> accountRepository = this.crontab.forAccount("account");
+        Entity<Task> task = accountRepository.create(Task.builder().spec(spec -> spec.url("created")).build());
+
+        accountRepository.delete(task);
+
+        assertThat(this.crontab.tasks(), hasSize(0));
+    }
+
+    @Test
+    public void givenTwoAccount__whenAddingTasksInBoth__thenAllTasksAreInCrontab() throws Exception {
+        Repository<Task, Void> account1 = this.crontab.forAccount("account-1");
+        Repository<Task, Void> account2 = this.crontab.forAccount("account-2");
+
+        account1.create(Task.builder().spec(spec -> spec.url("created")).build());
+        account2.create(Task.builder().spec(spec -> spec.url("created")).build());
+
+        assertThat(this.crontab.tasks(), hasSize(2));
+    }
+
+    @Test
+    public void givenAllSelector__whenFilteringSelectableTask__thenAllSelected() throws Exception {
+        for (int i = 0; i < 500; i++) {
+            this.crontab.forAccount("account").create(Task.builder().spec(TaskSpec.builder().url("task-" + i).build()).build());
+        }
+
+        List<Entity<Task>> selectable = this.crontab.selectable(spec -> true, this.forkJoinPool);
+        assertThat(selectable, hasSize(500));
+    }
+
+    @Test
+    public void givenNoneSelector__whenFilteringSelectableTask__thenNoneSelected() throws Exception {
+        for (int i = 0; i < 500; i++) {
+            this.crontab.forAccount("account").create(Task.builder().spec(TaskSpec.builder().url("task-" + i).build()).build());
+        }
+
+        List<Entity<Task>> selectable = this.crontab.selectable(spec -> false, this.forkJoinPool);
+        assertThat(selectable, hasSize(0));
+    }
+
+    @Test
+    public void givenOneOutOf5Selector__whenFilteringSelectableTask__thenSomeSelected() throws Exception {
+        for (int i = 0; i < 500; i++) {
+            this.crontab.forAccount("account").create(Task.builder().spec(TaskSpec.builder().url("task-" + i).build()).build());
+        }
+
+        List<Entity<Task>> selectable = this.crontab.selectable(spec -> Integer.parseInt(spec.url().split("-")[1]) % 5 == 0, this.forkJoinPool);
+        assertThat(selectable, hasSize(100));
+    }
+}

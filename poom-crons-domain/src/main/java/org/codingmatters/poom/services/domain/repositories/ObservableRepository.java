@@ -14,8 +14,9 @@ public class ObservableRepository <V, Q> implements Repository<V, Q> {
         this.delegate = delegate;
     }
 
-    public void addObserver(RepositoryObserver<V> observer) {
+    public ObservableRepository addObserver(RepositoryObserver<V> observer) {
         this.observer.add(observer);
+        return this;
     }
 
     @Override
