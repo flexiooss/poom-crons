@@ -4,6 +4,7 @@ import org.codingmatters.poom.crons.crontab.api.PoomCronsHandlers;
 import org.codingmatters.poom.crons.crontab.api.types.Task;
 import org.codingmatters.poom.crons.service.handler.TaskDelete;
 import org.codingmatters.poom.crons.service.handler.TaskGet;
+import org.codingmatters.poom.crons.service.handler.TaskList;
 import org.codingmatters.poom.crons.service.handler.TaskUpdate;
 import org.codingmatters.poom.services.domain.repositories.Repository;
 
@@ -18,6 +19,7 @@ public class PoomCronsApi {
                 .taskGetHandler(new TaskGet(repositoryForAccount))
                 .taskPutHandler(new TaskUpdate(repositoryForAccount))
                 .taskDeleteHandler(new TaskDelete(repositoryForAccount))
+                .accountCrontabGetHandler(new TaskList(repositoryForAccount))
                 .build();
     }
 
