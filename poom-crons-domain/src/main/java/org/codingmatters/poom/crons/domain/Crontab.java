@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,17 +43,19 @@ public class Crontab {
 
     public synchronized List<Entity<Task>> tasks() throws RepositoryException {
         List<Entity<Task>> result = new LinkedList<>();
+        this.forEachEntities(this.cache, taskEntity -> result.add(taskEntity));
+        return result;
+    }
 
+    private void forEachEntities(Repository<Task, Void> repository, Consumer<Entity<Task>> consumer) throws RepositoryException {
         long start = 0;
         PagedEntityList<Task> entities;
         do {
             long end = start + 1000 - 1;
-            entities = this.cache.all(start, end);
-            result.addAll(entities);
+            entities = repository.all(start, end);
+            entities.forEach(consumer);
             start = end + 1;
         } while(entities.size() == 1000);
-
-        return result;
     }
 
     public synchronized List<Entity<Task>> selectable(TaskSelector selector, ForkJoinPool pool) throws RepositoryException, ExecutionException, InterruptedException {
@@ -72,6 +75,14 @@ public class Crontab {
         String id = task.id().substring(sepIndex + 1);
 
         this.forAccount(account).update(new MutableEntity<>(id, task.value()), withValue);
+    }
+
+    public Crontab loadAccounts(String ... accounts) throws RepositoryException {
+        for (String account : accounts) {
+            this.forEachEntities(this.forAccount(account), task -> this.created(account, task));
+        }
+
+        return this;
     }
 
     static class AccountObserver implements RepositoryObserver<Task> {

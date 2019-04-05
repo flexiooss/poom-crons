@@ -21,14 +21,19 @@ public class CrontabTest {
 
     private final HashMap<String, Repository<Task, Void>> accountRepositries = new HashMap<>();
     private final Crontab crontab = new Crontab(account -> {
-        accountRepositries.putIfAbsent(account, new InMemoryRepository<Task, Void>() {
+        accountRepositries.computeIfAbsent(account, s -> createAccountRepository());
+        return accountRepositries.get(account);
+    });
+
+    private InMemoryRepository<Task, Void> createAccountRepository() {
+        return new InMemoryRepository<Task, Void>() {
                 @Override
                 public PagedEntityList<Task> search(Void query, long startIndex, long endIndex) throws RepositoryException {
                     return this.all(startIndex, endIndex);
                 }
-            });
-        return accountRepositries.get(account);
-    });
+            };
+    }
+
     private ForkJoinPool forkJoinPool = new ForkJoinPool(4);
 
     @Test
@@ -117,5 +122,41 @@ public class CrontabTest {
 
         assertThat(this.crontab.forAccount("my-account-1").retrieve("id").value().spec().url(), is("changed1"));
         assertThat(this.crontab.forAccount("my-account-2").retrieve("id").value().spec().url(), is("changed2"));
+    }
+
+    @Test
+    public void givenAccountRepositoriesAreNotEmpty__whenLoadingAccountsCrontab__thenAccountsTasksAreLoaded() throws Exception {
+        accountRepositries.put("my-account-1", createAccountRepository());
+        accountRepositries.get("my-account-1").create(Task.builder().spec(TaskSpec.builder().build()).build());
+        accountRepositries.put("my-account-2", createAccountRepository());
+        accountRepositries.get("my-account-2").create(Task.builder().spec(TaskSpec.builder().build()).build());
+
+        this.crontab.loadAccounts("my-account-1", "my-account-2");
+
+        assertThat(this.crontab.tasks(), hasSize(2));
+    }
+
+    @Test
+    public void givenAccountRepositoriesAreNotEmpty__whenLoadingOneAccountCrontab__thenAccountTasksAreLoaded() throws Exception {
+        accountRepositries.put("my-account-1", createAccountRepository());
+        accountRepositries.get("my-account-1").create(Task.builder().spec(TaskSpec.builder().build()).build());
+        accountRepositries.put("my-account-2", createAccountRepository());
+        accountRepositries.get("my-account-2").create(Task.builder().spec(TaskSpec.builder().build()).build());
+
+        this.crontab.loadAccounts("my-account-1");
+
+        assertThat(this.crontab.tasks(), hasSize(1));
+    }
+
+    @Test
+    public void givenAccountRepositoriesAreNotEmpty__whenLoadingNotExistingAccountCrontab__thenAccountTasksNotLoaded() throws Exception {
+        accountRepositries.put("my-account-1", createAccountRepository());
+        accountRepositries.get("my-account-1").create(Task.builder().spec(TaskSpec.builder().build()).build());
+        accountRepositries.put("my-account-2", createAccountRepository());
+        accountRepositries.get("my-account-2").create(Task.builder().spec(TaskSpec.builder().build()).build());
+
+        this.crontab.loadAccounts("my-account-3");
+
+        assertThat(this.crontab.tasks(), hasSize(0));
     }
 }
