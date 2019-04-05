@@ -1,6 +1,7 @@
 package org.codingmatters.poom.crons.domain;
 
 import org.codingmatters.poom.crons.crontab.api.types.Task;
+import org.codingmatters.poom.crons.domain.selector.TaskSelector;
 import org.codingmatters.poom.services.domain.exceptions.RepositoryException;
 import org.codingmatters.poom.services.domain.repositories.ObservableRepository;
 import org.codingmatters.poom.services.domain.repositories.Repository;

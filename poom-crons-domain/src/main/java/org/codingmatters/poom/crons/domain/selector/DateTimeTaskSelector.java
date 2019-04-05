@@ -1,4 +1,4 @@
-package org.codingmatters.poom.crons.domain;
+package org.codingmatters.poom.crons.domain.selector;
 
 import org.codingmatters.poom.crons.crontab.api.types.TaskSpec;
 import org.codingmatters.poom.crons.crontab.api.types.taskspec.scheduled.At;
