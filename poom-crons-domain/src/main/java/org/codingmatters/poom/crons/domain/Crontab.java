@@ -64,6 +64,16 @@ public class Crontab {
         return result;
     }
 
+    public void update(Entity<Task> task, Task withValue) throws RepositoryException {
+        int sepIndex = task.id().indexOf("/");
+        if(sepIndex == -1) throw new RepositoryException("cannot update task as id doesn't match with account/id mapping : " + task.id());
+
+        String account = task.id().substring(0, sepIndex);
+        String id = task.id().substring(sepIndex + 1);
+
+        this.forAccount(account).update(new MutableEntity<>(id, task.value()), withValue);
+    }
+
     static class AccountObserver implements RepositoryObserver<Task> {
 
         private final Crontab crontab;
@@ -92,7 +102,7 @@ public class Crontab {
 
     private synchronized void created(String account, Entity<Task> entity) {
         try {
-            this.cache.createWithId("account/" + entity.id(), entity.value());
+            this.cache.createWithId(this.cacheId(account, entity), entity.value());
         } catch (RepositoryException e) {
             this.error(e);
         }
@@ -100,7 +110,7 @@ public class Crontab {
 
     private synchronized void updated(String account, Entity<Task> entity) {
         try {
-            this.cache.update(new MutableEntity<>("account/" + entity.id(), entity.value()), entity.value());
+            this.cache.update(new MutableEntity<>(this.cacheId(account, entity), entity.value()), entity.value());
         } catch (RepositoryException e) {
             this.error(e);
         }
@@ -108,10 +118,14 @@ public class Crontab {
 
     private synchronized void deleted(String account, Entity<Task> entity) {
         try {
-            this.cache.delete(new MutableEntity<>("account/" + entity.id(), entity.value()));
+            this.cache.delete(new MutableEntity<>(this.cacheId(account, entity), entity.value()));
         } catch (RepositoryException e) {
             this.error(e);
         }
+    }
+
+    private String cacheId(String account, Entity<Task> entity) {
+        return account + "/" + entity.id();
     }
 
     private void error(RepositoryException e) {

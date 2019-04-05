@@ -33,17 +33,17 @@ public class CrontabTest {
 
     @Test
     public void givenRepositoryForAccount__whenCreatingTask__thenTaskAddedToCrontab() throws Exception {
-        Repository<Task, Void> accountRepository = this.crontab.forAccount("account");
+        Repository<Task, Void> accountRepository = this.crontab.forAccount("my-account");
         Entity<Task> task = accountRepository.create(Task.builder().spec(spec -> spec.url("created")).build());
 
         assertThat(this.crontab.tasks(), hasSize(1));
-        assertThat(this.crontab.tasks().get(0).id(), is("account/" + task.id()));
+        assertThat(this.crontab.tasks().get(0).id(), is("my-account/" + task.id()));
         assertThat(this.crontab.tasks().get(0).value(), is(task.value()));
     }
 
     @Test
     public void givenRepositoryForAccount__whenUpdatingTask__thenTaskUpdatedInCrontab() throws Exception {
-        Repository<Task, Void> accountRepository = this.crontab.forAccount("account");
+        Repository<Task, Void> accountRepository = this.crontab.forAccount("my-account");
         Entity<Task> task = accountRepository.create(Task.builder().spec(spec -> spec.url("created")).build());
 
         accountRepository.update(task, task.value().withSpec(TaskSpec.builder().url("modified").build()));
@@ -54,7 +54,7 @@ public class CrontabTest {
 
     @Test
     public void givenRepositoryForAccount__whenDeletingTask__thenTaskDeletedInCrontab() throws Exception {
-        Repository<Task, Void> accountRepository = this.crontab.forAccount("account");
+        Repository<Task, Void> accountRepository = this.crontab.forAccount("my-account");
         Entity<Task> task = accountRepository.create(Task.builder().spec(spec -> spec.url("created")).build());
 
         accountRepository.delete(task);
@@ -64,8 +64,8 @@ public class CrontabTest {
 
     @Test
     public void givenTwoAccount__whenAddingTasksInBoth__thenAllTasksAreInCrontab() throws Exception {
-        Repository<Task, Void> account1 = this.crontab.forAccount("account-1");
-        Repository<Task, Void> account2 = this.crontab.forAccount("account-2");
+        Repository<Task, Void> account1 = this.crontab.forAccount("my-account-1");
+        Repository<Task, Void> account2 = this.crontab.forAccount("my-account-2");
 
         account1.create(Task.builder().spec(spec -> spec.url("created")).build());
         account2.create(Task.builder().spec(spec -> spec.url("created")).build());
@@ -76,7 +76,7 @@ public class CrontabTest {
     @Test
     public void givenAllSelector__whenFilteringSelectableTask__thenAllSelected() throws Exception {
         for (int i = 0; i < 500; i++) {
-            this.crontab.forAccount("account").create(Task.builder().spec(TaskSpec.builder().url("task-" + i).build()).build());
+            this.crontab.forAccount("my-account").create(Task.builder().spec(TaskSpec.builder().url("task-" + i).build()).build());
         }
 
         List<Entity<Task>> selectable = this.crontab.selectable(spec -> true, this.forkJoinPool);
@@ -86,7 +86,7 @@ public class CrontabTest {
     @Test
     public void givenNoneSelector__whenFilteringSelectableTask__thenNoneSelected() throws Exception {
         for (int i = 0; i < 500; i++) {
-            this.crontab.forAccount("account").create(Task.builder().spec(TaskSpec.builder().url("task-" + i).build()).build());
+            this.crontab.forAccount("my-account").create(Task.builder().spec(TaskSpec.builder().url("task-" + i).build()).build());
         }
 
         List<Entity<Task>> selectable = this.crontab.selectable(spec -> false, this.forkJoinPool);
@@ -96,10 +96,26 @@ public class CrontabTest {
     @Test
     public void givenOneOutOf5Selector__whenFilteringSelectableTask__thenSomeSelected() throws Exception {
         for (int i = 0; i < 500; i++) {
-            this.crontab.forAccount("account").create(Task.builder().spec(TaskSpec.builder().url("task-" + i).build()).build());
+            this.crontab.forAccount("my-account").create(Task.builder().spec(TaskSpec.builder().url("task-" + i).build()).build());
         }
 
         List<Entity<Task>> selectable = this.crontab.selectable(spec -> Integer.parseInt(spec.url().split("-")[1]) % 5 == 0, this.forkJoinPool);
         assertThat(selectable, hasSize(100));
+    }
+
+    @Test
+    public void givenTasksAreInDifferentAccountWithSameId__whenUpdatingTasksFromCrontab__thenTasksAreModifiedInTheCorrectRepository() throws Exception {
+        this.crontab.forAccount("my-account-1").createWithId("id", Task.builder().spec(TaskSpec.builder().url("account1").build()).build());
+        this.crontab.forAccount("my-account-2").createWithId("id", Task.builder().spec(TaskSpec.builder().url("account2").build()).build());
+
+        for (Entity<Task> task : this.crontab.tasks()) {
+            this.crontab.update(task, task.value().spec().url().equals("account1") ?
+                    task.value().withSpec(TaskSpec.builder().url("changed1").build()) :
+                    task.value().withSpec(TaskSpec.builder().url("changed2").build())
+            );
+        }
+
+        assertThat(this.crontab.forAccount("my-account-1").retrieve("id").value().spec().url(), is("changed1"));
+        assertThat(this.crontab.forAccount("my-account-2").retrieve("id").value().spec().url(), is("changed2"));
     }
 }

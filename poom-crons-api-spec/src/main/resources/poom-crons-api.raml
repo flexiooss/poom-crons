@@ -103,7 +103,8 @@ types:
            - mongo:field(_id)
       spec: TaskSpec
       last-trig: datetime-only
-      error-count: number
+      success: boolean
+      error-count: integer
 
   Error:
     type: object
