@@ -137,6 +137,29 @@ public class CrontabTest {
     }
 
     @Test
+    public void givenAccountRepositoryHasManyEntry__whenLoadingAccountsCrontab__thenAccountTasksAreLoaded() throws Exception {
+        accountRepositries.put("my-account-1", createAccountRepository());
+        accountRepositries.get("my-account-1").create(Task.builder().spec(TaskSpec.builder().build()).build());
+        accountRepositries.get("my-account-1").create(Task.builder().spec(TaskSpec.builder().build()).build());
+        accountRepositries.get("my-account-1").create(Task.builder().spec(TaskSpec.builder().build()).build());
+
+        this.crontab.loadAccounts("my-account-1");
+
+        assertThat(this.crontab.tasks(), hasSize(3));
+    }
+
+    @Test
+    public void givenAccountRepositoryHasOneEntry__whenLoadingAccountsCrontab_andCreatingATask__thenBothTasksAreLoaded() throws Exception {
+        accountRepositries.put("my-account-1", createAccountRepository());
+        accountRepositries.get("my-account-1").create(Task.builder().spec(TaskSpec.builder().build()).build());
+
+        this.crontab.loadAccounts("my-account-1");
+        this.crontab.forAccount("my-account-1").create(Task.builder().spec(TaskSpec.builder().build()).build());
+
+        assertThat(this.crontab.tasks(), hasSize(2));
+    }
+
+    @Test
     public void givenAccountRepositoriesAreNotEmpty__whenLoadingOneAccountCrontab__thenAccountTasksAreLoaded() throws Exception {
         accountRepositries.put("my-account-1", createAccountRepository());
         accountRepositries.get("my-account-1").create(Task.builder().spec(TaskSpec.builder().build()).build());

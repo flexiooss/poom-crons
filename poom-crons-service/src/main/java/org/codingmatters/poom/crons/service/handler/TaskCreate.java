@@ -29,6 +29,7 @@ public class TaskCreate implements Function<AccountCrontabPostRequest, AccountCr
         if(validation.valid()) {
             try {
                 Entity<Task> created = repository.create(Task.builder().spec(request.payload()).build());
+                log.audit().info("created task for account {} : {}", request.account(), created);
                 return AccountCrontabPostResponse.builder()
                         .status201(status -> status
                                 .xEntityId(created.id())

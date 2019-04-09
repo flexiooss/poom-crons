@@ -47,15 +47,19 @@ public class Crontab {
         return result;
     }
 
-    private void forEachEntities(Repository<Task, Void> repository, Consumer<Entity<Task>> consumer) throws RepositoryException {
+    private long forEachEntities(Repository<Task, Void> repository, Consumer<Entity<Task>> consumer) throws RepositoryException {
+        long result = 0;
         long start = 0;
         PagedEntityList<Task> entities;
         do {
             long end = start + 1000 - 1;
             entities = repository.all(start, end);
             entities.forEach(consumer);
+            result += entities.size();
             start = end + 1;
         } while(entities.size() == 1000);
+
+        return result;
     }
 
     public synchronized List<Entity<Task>> selectable(TaskSelector selector, ForkJoinPool pool) throws RepositoryException, ExecutionException, InterruptedException {
@@ -78,8 +82,11 @@ public class Crontab {
     }
 
     public Crontab loadAccounts(String ... accounts) throws RepositoryException {
-        for (String account : accounts) {
-            this.forEachEntities(this.forAccount(account), task -> this.created(account, task));
+        if(accounts != null) {
+            for (String account : accounts) {
+                long count = this.forEachEntities(this.forAccount(account), task -> this.created(account, task));
+                log.info("for account {} loaded {} tasks.", account, count);
+            }
         }
 
         return this;
