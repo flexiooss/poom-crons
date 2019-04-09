@@ -29,8 +29,13 @@ public class CrontabService {
     private TaskExecutor executor;
 
     private ScheduledExecutorService scheduler;
+    private Long errorThreshold = 3L;
 
-    public CrontabService(Function<String, Repository<Task, Void>> repositoryForAccount, String[] initialAccounts, TaskTrigger trigger, ForkJoinPool pool) throws RepositoryException {
+    public CrontabService(
+            Function<String, Repository<Task, Void>> repositoryForAccount,
+            String[] initialAccounts,
+            TaskTrigger trigger,
+            ForkJoinPool pool) throws RepositoryException {
         this.crontab = new Crontab(repositoryForAccount).loadAccounts(initialAccounts);
 
         this.api = new PoomCronsApi(account -> this.crontab.forAccount(account));
@@ -44,14 +49,12 @@ public class CrontabService {
         return this.api;
     }
 
-    private void tick() throws RepositoryException, ExecutionException, InterruptedException {
-        List<Entity<Task>> selectable = this.crontab.selectable(new DateTimeTaskSelector(UTC.now()), this.pool);
-        if(! selectable.isEmpty()) {
-            List<Entity<Task>> executed = this.executor.execute(selectable);
-            for (Entity<Task> task : executed) {
-                this.crontab.update(task, task.value());
-            }
-        }
+    public void start() {
+        this.scheduler = Executors.newSingleThreadScheduledExecutor();
+        int nextMinuteStart = 60 - LocalDateTime.now().getSecond();
+        this.scheduler.scheduleAtFixedRate(this::checkedTick, nextMinuteStart, 60, TimeUnit.SECONDS);
+        this.scheduler.scheduleAtFixedRate(this::cleanupFailedTasks, nextMinuteStart + 30, 60, TimeUnit.SECONDS);
+        log.info("started crontab service");
     }
 
     private void checkedTick() {
@@ -63,10 +66,28 @@ public class CrontabService {
         }
     }
 
-    public void start() {
-        this.scheduler = Executors.newSingleThreadScheduledExecutor();
-        this.scheduler.scheduleAtFixedRate(this::checkedTick, 60 - LocalDateTime.now().getSecond(), 60, TimeUnit.SECONDS);
-        log.info("started crontab service");
+    private void tick() throws RepositoryException, ExecutionException, InterruptedException {
+        List<Entity<Task>> selectable = this.crontab.selectable(new DateTimeTaskSelector(UTC.now()), this.pool);
+        if(! selectable.isEmpty()) {
+            List<Entity<Task>> executed = this.executor.execute(selectable);
+            for (Entity<Task> task : executed) {
+                this.crontab.update(task, task.value());
+            }
+        }
+    }
+
+    private void cleanupFailedTasks() {
+        try {
+            for (Entity<Task> task : this.crontab.tasks()) {
+                if(task.value().errorCount() >= this.errorThreshold) {
+                    log.info("task has reached the error threshold ({}), removing from crontab : {}", this.errorThreshold, task);
+                    this.crontab.delete(task);
+                }
+            }
+        } catch (RepositoryException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void stop() {

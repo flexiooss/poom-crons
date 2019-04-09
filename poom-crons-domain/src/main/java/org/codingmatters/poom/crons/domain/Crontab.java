@@ -81,6 +81,16 @@ public class Crontab {
         this.forAccount(account).update(new MutableEntity<>(id, task.value()), withValue);
     }
 
+    public void delete(Entity<Task> task) throws RepositoryException {
+        int sepIndex = task.id().indexOf("/");
+        if(sepIndex == -1) throw new RepositoryException("cannot update task as id doesn't match with account/id mapping : " + task.id());
+
+        String account = task.id().substring(0, sepIndex);
+        String id = task.id().substring(sepIndex + 1);
+
+        this.forAccount(account).delete(new MutableEntity<>(id, task.value()));
+    }
+
     public Crontab loadAccounts(String ... accounts) throws RepositoryException {
         if(accounts != null) {
             for (String account : accounts) {

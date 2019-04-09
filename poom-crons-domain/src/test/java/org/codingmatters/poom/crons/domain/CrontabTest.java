@@ -125,6 +125,21 @@ public class CrontabTest {
     }
 
     @Test
+    public void givenTasksAreInDifferentAccountWithSameId__whenDeletingTasksFromCrontab__thenTasksAreRemovedInTheCorrectRepository() throws Exception {
+        this.crontab.forAccount("my-account-1").createWithId("id", Task.builder().spec(TaskSpec.builder().url("account1").build()).build());
+        this.crontab.forAccount("my-account-2").createWithId("id", Task.builder().spec(TaskSpec.builder().url("account2").build()).build());
+
+        for (Entity<Task> task : this.crontab.tasks()) {
+            if(task.value().spec().url().equals("account1") ) {
+                this.crontab.delete(task);
+            }
+        }
+
+        assertThat(this.crontab.forAccount("my-account-1").all(0, 0).total(), is(0L));
+        assertThat(this.crontab.forAccount("my-account-2").all(0, 0).total(), is(1L));
+    }
+
+    @Test
     public void givenAccountRepositoriesAreNotEmpty__whenLoadingAccountsCrontab__thenAccountsTasksAreLoaded() throws Exception {
         accountRepositries.put("my-account-1", createAccountRepository());
         accountRepositries.get("my-account-1").create(Task.builder().spec(TaskSpec.builder().build()).build());

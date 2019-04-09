@@ -25,10 +25,15 @@ public class CrontabServiceTest {
     static private final CategorizedLogger log = CategorizedLogger.getLogger(CrontabServiceTest.class);
 
     private final AtomicLong hits = new AtomicLong(0L);
-    private final TaskTrigger trigger = spec -> {
+
+    private final TaskTrigger successTrigger = spec -> {
         hits.incrementAndGet();
-        log.info("trigged");
+        log.info("success trig");
         return new TriggerResult(true);
+    };
+    private final TaskTrigger failureTrigger = spec -> {
+        log.info("failure trig");
+        return new TriggerResult(false);
     };
 
     private final HashMap<String, Repository<Task, Void>> accountRepositries = new HashMap<>();
@@ -47,7 +52,7 @@ public class CrontabServiceTest {
     }
 
     @Test
-    public void givenNoTask__whenAddingTask_andTicking__thenTaskIsExecuted() throws Exception {
+    public void givenATaskInRepo__whenAddingTask_andTicking__thenBothTasksAreExecuted() throws Exception {
         this.repositoryForAccount.apply("my-account").create(Task.builder()
                 .spec(spec -> spec
                         .url("my-url")
@@ -58,7 +63,7 @@ public class CrontabServiceTest {
                 )
                 .build());
 
-        CrontabService service = new CrontabService(this.repositoryForAccount, new String[] {"my-account"}, this.trigger, new ForkJoinPool(4));
+        CrontabService service = new CrontabService(this.repositoryForAccount, new String[] {"my-account"}, this.successTrigger, new ForkJoinPool(4));
 
         try {
             service.start();
@@ -76,9 +81,31 @@ public class CrontabServiceTest {
                     .opt().status201()
                     .orElseThrow(() -> new AssertionError("failed scheduling task"));
 
-            System.out.println(this.repositoryForAccount.apply("my-account").all(0, 100));
-
             Eventually.timeout(1, TimeUnit.MINUTES).assertThat(() -> hits.get(), is(2L));
+        } finally {
+            service.stop();
+        }
+    }
+
+    @Test
+    public void givenATaskWithFailures__whenReachingThreErrorThreshold__thenTaskIsEvicted() throws Exception {
+        this.repositoryForAccount.apply("my-account").create(Task.builder()
+                .errorCount(2L)
+                .spec(spec -> spec
+                        .url("my-url")
+                        .scheduled(scheduled -> scheduled.every(every -> every
+                                .minutes(1L)
+                                .startingAt(UTC.now().minusHours(1L).withSecond(0).withNano(0))
+                        ))
+                )
+                .build());
+
+        CrontabService service = new CrontabService(this.repositoryForAccount, new String[] {"my-account"}, this.failureTrigger, new ForkJoinPool(4));
+
+        try {
+            service.start();
+
+            Eventually.timeout(2, TimeUnit.MINUTES).assertThat(() -> this.repositoryForAccount.apply("my-account").all(0, 0).total(), is(0L));
         } finally {
             service.stop();
         }
