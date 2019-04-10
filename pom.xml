@@ -61,6 +61,7 @@
         <module>poom-crons-api-spec</module>
         <module>poom-crons-api</module>
         <module>poom-crons-domain</module>
+        <module>poom-crons-service</module>
     </modules>
 
     <dependencies>
@@ -89,6 +90,16 @@
             <dependency>
                 <groupId>org.codingmatters.poom.crons</groupId>
                 <artifactId>poom-crons-api</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codingmatters.poom.crons</groupId>
+                <artifactId>poom-crons-domain</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codingmatters.poom.crons</groupId>
+                <artifactId>poom-crons-service</artifactId>
                 <version>1.0.0-SNAPSHOT</version>
             </dependency>
             <!--// BOM-->

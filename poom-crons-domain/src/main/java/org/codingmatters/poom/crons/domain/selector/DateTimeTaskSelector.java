@@ -1,4 +1,4 @@
-package org.codingmatters.poom.crons.domain;
+package org.codingmatters.poom.crons.domain.selector;
 
 import org.codingmatters.poom.crons.crontab.api.types.TaskSpec;
 import org.codingmatters.poom.crons.crontab.api.types.taskspec.scheduled.At;
@@ -8,13 +8,14 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
-public class TaskSelector {
+public class DateTimeTaskSelector implements TaskSelector {
     private final LocalDateTime atTime;
 
-    public TaskSelector(LocalDateTime atTime) {
+    public DateTimeTaskSelector(LocalDateTime atTime) {
         this.atTime = atTime;
     }
 
+    @Override
     public boolean selectable(TaskSpec spec) {
         if(spec.opt().scheduled().at().isPresent()) {
             return this.selectableAt(spec.scheduled().at());

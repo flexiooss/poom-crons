@@ -13,6 +13,16 @@ import static org.junit.Assert.assertThat;
 public class TaskSpecValidatorTest {
 
     @Test
+    public void whenNoExpressionProvided__thenIsInvalid() throws Exception {
+        assertThat(
+                new TaskSpecValidator(TaskSpec.builder()
+                        .url("http://an.url")
+                        .build()).validate(),
+                is(invalidSpec("must provide an expression (one of at, every)"))
+        );
+    }
+
+    @Test
     public void whenNominalAtExpression__thenIsValid() throws Exception {
         assertThat(
                 new TaskSpecValidator(TaskSpec.builder()

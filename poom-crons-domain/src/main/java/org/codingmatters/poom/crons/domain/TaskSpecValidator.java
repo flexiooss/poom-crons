@@ -12,12 +12,20 @@ public class TaskSpecValidator {
     }
 
     public TaskSpecValidation validate() {
+        if(this.spec == null) {
+            return TaskSpecValidation.invalidSpec("no task spec");
+        }
         if(! this.spec.opt().url().isPresent()) {
             return TaskSpecValidation.invalidSpec("no url provided");
         }
         if(this.spec.opt().scheduled().at().isPresent() && this.spec.opt().scheduled().every().isPresent()) {
             return TaskSpecValidation.invalidSpec("cannot provide both an at and an every expression");
         }
+
+        if(! this.spec.opt().scheduled().at().isPresent() && ! this.spec.opt().scheduled().every().isPresent()) {
+            return TaskSpecValidation.invalidSpec("must provide an expression (one of at, every)");
+        }
+
         if(this.spec.opt().scheduled().at().isPresent()) {
             if(! (this.spec.opt().scheduled().at().minuteOfHours().isPresent() ||
                     this.spec.opt().scheduled().at().hourOfDay().isPresent() ||
