@@ -1,0 +1,14 @@
+#%RAML 1.0
+title: poom cronned
+version: v1
+baseUri: https://api.codingmatters.org/cronned
+mediaType: application/json
+
+/:
+  displayName: Task Event Triggered
+  post:
+    headers:
+      poom-event-id: string
+      poom-cronned-at: datetime-only
+      poom-task-id: string
+    body: object

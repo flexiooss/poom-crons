@@ -29,7 +29,7 @@ crontab -> crontab: at fixed rate
 activate crontab
     loop stored task specifications : task
         alt task.scheduledAt is triggerable
-            crontab -> cronned: POST task.url \n[task.body]
+            crontab -> cronned: POST task.url \n {poom-cronned-at, poom-cronned-task-id} [task.body]
             activate cronned
             crontab <-- cronned: 204
             deactivate cronned
@@ -45,7 +45,7 @@ crontab -> crontab: at fixed rate
 activate crontab
     loop stored task specifications : task
         alt task.scheduledAt is triggerable
-            crontab -> cronned: POST task.url \n[task.body]
+            crontab -> cronned: POST task.url \n {poom-cronned-at, poom-cronned-task-id} [task.body]
             activate cronned
             crontab <-- cronned: 410 Gone
             deactivate cronned
