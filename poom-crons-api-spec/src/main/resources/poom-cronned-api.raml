@@ -12,3 +12,25 @@ mediaType: application/json
       poom-cronned-at: datetime-only
       poom-task-id: string
     body: object
+    responses:
+      204:
+      410:
+        body: Error
+      500:
+        body: Error
+
+types:
+  Error:
+    type: object
+    properties:
+      token: string
+      code:
+        enum: [
+        ILLEGAL_RANGE_SPEC,
+        UNEXPECTED_ERROR,
+        RESOURCE_NOT_FOUND,
+        INVALID_ACCOUNT,
+        INVALID_RANGE,
+        INVALID_REQUEST,
+        INVALID_PROPERTY]
+      description: string
