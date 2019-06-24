@@ -22,8 +22,8 @@ public class TaskExecutorTest {
 
     private ForkJoinPool forkJoinPool = new ForkJoinPool(4);
 
-    public static final TaskTrigger SUCCESS = spec -> new TriggerResult(true);
-    public static final TaskTrigger FAILURE = spec -> new TriggerResult(false);
+    public static final TaskTrigger SUCCESS = (spec, triggedAt, eventId) -> new TriggerResult(true);
+    public static final TaskTrigger FAILURE = (spec, triggedAt, eventId) -> new TriggerResult(false);
 
     @Test
     public void whenExecutingEmptyTaskList__thenResultIsEmpty() throws Exception {

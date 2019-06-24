@@ -26,12 +26,12 @@ public class CrontabServiceTest {
 
     private final AtomicLong hits = new AtomicLong(0L);
 
-    private final TaskTrigger successTrigger = spec -> {
+    private final TaskTrigger successTrigger = (spec, triggedAt, eventId) -> {
         hits.incrementAndGet();
         log.info("success trig");
         return new TriggerResult(true);
     };
-    private final TaskTrigger failureTrigger = spec -> {
+    private final TaskTrigger failureTrigger = (spec, triggedAt, eventId) -> {
         log.info("failure trig");
         return new TriggerResult(false);
     };

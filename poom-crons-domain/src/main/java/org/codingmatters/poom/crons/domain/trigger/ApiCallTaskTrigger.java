@@ -5,6 +5,7 @@ import org.codingmatters.poom.crons.cronned.api.TaskEventTriggeredPostRequest;
 import org.codingmatters.poom.crons.cronned.api.TaskEventTriggeredPostResponse;
 import org.codingmatters.poom.crons.cronned.client.PoomCronnedClient;
 import org.codingmatters.poom.crons.cronned.client.PoomCronnedRequesterClient;
+import org.codingmatters.poom.crons.crontab.api.types.Task;
 import org.codingmatters.poom.crons.crontab.api.types.TaskSpec;
 import org.codingmatters.poom.services.logging.CategorizedLogger;
 import org.codingmatters.poom.services.support.date.UTC;
@@ -13,6 +14,7 @@ import org.codingmatters.rest.api.client.okhttp.HttpClientWrapper;
 import org.codingmatters.rest.api.client.okhttp.OkHttpRequesterFactory;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.function.Function;
 
 public class ApiCallTaskTrigger implements TaskTrigger {
@@ -32,27 +34,29 @@ public class ApiCallTaskTrigger implements TaskTrigger {
     }
 
     @Override
-    public TriggerResult trig(TaskSpec spec) {
-        PoomCronnedClient client = this.clientProvider.apply(spec);
+    public TriggerResult trig(Task task, LocalDateTime triggedAt, String eventId) {
+        PoomCronnedClient client = this.clientProvider.apply(task.spec());
 
         try {
             TaskEventTriggeredPostResponse response = client.taskEventTriggered().post(TaskEventTriggeredPostRequest.builder()
-                    .poomCronnedAt(UTC.now())
-                    .payload(spec.payload())
+                    .poomTriggedAt(triggedAt)
+                    .poomEventId(eventId)
+                    .poomTaskId(task.id())
+                    .payload(task.spec().payload())
                     .build());
 
             if(response.opt().status204().isPresent()) {
-                log.debug("triggered {}", spec);
+                log.debug("triggered {}", task);
                 return new TriggerResult(true);
             } else if (response.opt().status410().isPresent()) {
-                log.info("cronned service signaled as gone while triggering {}", spec);
+                log.info("cronned service signaled as gone while triggering {}", task);
                 return new TriggerResult(false, true);
             } else {
-                log.error("error while triggering {} : {}", spec, response);
+                log.error("error while triggering {} : {}", task, response);
                 return new TriggerResult(false, false);
             }
         } catch (IOException e) {
-            log.error("failed triggering with task spec : " + spec, e);
+            log.error("failed triggering with task spec : " + task, e);
             return new TriggerResult(false, false);
         }
     }

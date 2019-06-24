@@ -9,25 +9,23 @@ import org.codingmatters.poom.crons.cronned.api.taskeventtriggeredpostresponse.S
 import org.codingmatters.poom.crons.cronned.api.taskeventtriggeredpostresponse.Status410;
 import org.codingmatters.poom.crons.cronned.api.taskeventtriggeredpostresponse.Status500;
 import org.codingmatters.poom.crons.cronned.api.types.Error;
-import org.codingmatters.poom.crons.cronned.client.PoomCronnedClient;
-import org.codingmatters.poom.crons.cronned.client.PoomCronnedRequesterClient;
+import org.codingmatters.poom.crons.crontab.api.types.Task;
 import org.codingmatters.poom.crons.crontab.api.types.TaskSpec;
-import org.codingmatters.poom.crons.crontab.api.types.taskspec.Scheduled;
+import org.codingmatters.poom.services.support.date.UTC;
 import org.codingmatters.rest.api.client.okhttp.OkHttpClientWrapper;
-import org.codingmatters.rest.api.client.okhttp.OkHttpRequesterFactory;
 import org.codingmatters.rest.undertow.CdmHttpUndertowHandler;
 import org.codingmatters.rest.undertow.support.UndertowResource;
 import org.codingmatters.value.objects.values.ObjectValue;
 import org.codingmatters.value.objects.values.PropertyValue;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.codingmatters.poom.services.tests.DateMatchers.around;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -52,18 +50,31 @@ public class ApiCallTaskTriggerTest {
         this.trigger = new ApiCallTaskTrigger(OkHttpClientWrapper.build(builder -> builder.connectTimeout(2, TimeUnit.SECONDS)), new JsonFactory());
     }
 
+    private Task task() {
+        return Task.builder().id(UUID.randomUUID().toString())
+                .spec(TaskSpec.builder()
+                        .url(this.server.baseUrl() + "/cronned")
+                        .payload(ObjectValue.builder().property("hello", PropertyValue.builder().stringValue("world")).build())
+                        .build())
+                .build();
+    }
+
     @Test
     public void givenUrlIsOk__whenCronnedReturnsA204__thenResultIsSuccess() throws Exception {
         this.nextResponse.set(TaskEventTriggeredPostResponse.builder()
                 .status204(Status204.builder().build())
                 .build());
 
-        assertThat(this.trigger.trig(TaskSpec.builder()
-                .url(this.server.baseUrl() + "/cronned")
-                .payload(ObjectValue.builder().property("hello", PropertyValue.builder().stringValue("world")).build())
-                .build()),
+        Task task = this.task();
+        assertThat(this.trigger.trig(task, UTC.now(), "12"),
                 is(new TriggerResult(true, false))
         );
+
+        assertThat(this.lastRequest.get().poomEventId(), is("12"));
+        assertThat(this.lastRequest.get().poomTaskId(), is(task.id()));
+        assertThat(this.lastRequest.get().payload(), is(task.spec().payload()));
+        assertThat(this.lastRequest.get().poomTriggedAt(), is(around(UTC.now())));
+
     }
 
     @Test
@@ -72,10 +83,7 @@ public class ApiCallTaskTriggerTest {
                 .status410(Status410.builder().payload(Error.builder().build()).build())
                 .build());
 
-        assertThat(this.trigger.trig(TaskSpec.builder()
-                .url(this.server.baseUrl() + "/cronned")
-                .payload(ObjectValue.builder().property("hello", PropertyValue.builder().stringValue("world")).build())
-                .build()),
+        assertThat(this.trigger.trig(this.task(), UTC.now(), "12"),
                 is(new TriggerResult(false, true))
         );
     }
@@ -85,10 +93,7 @@ public class ApiCallTaskTriggerTest {
         this.nextResponse.set(TaskEventTriggeredPostResponse.builder()
                 .status500(Status500.builder().build())
                 .build());
-        assertThat(this.trigger.trig(TaskSpec.builder()
-                .url(this.server.baseUrl() + "/cronned")
-                .payload(ObjectValue.builder().property("hello", PropertyValue.builder().stringValue("world")).build())
-                .build()),
+        assertThat(this.trigger.trig(this.task(), UTC.now(), "12"),
                 is(new TriggerResult(false, false))
         );
     }
@@ -98,10 +103,7 @@ public class ApiCallTaskTriggerTest {
         this.nextResponse.set(TaskEventTriggeredPostResponse.builder()
                 .status500(Status500.builder().build())
                 .build());
-        assertThat(this.trigger.trig(TaskSpec.builder()
-                .url("http://no.where.on.earth.loc")
-                .payload(ObjectValue.builder().property("hello", PropertyValue.builder().stringValue("world")).build())
-                .build()),
+        assertThat(this.trigger.trig(this.task(), UTC.now(), "12"),
                 is(new TriggerResult(false, false))
         );
     }
