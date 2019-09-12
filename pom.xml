@@ -12,7 +12,7 @@
 
     <groupId>org.codingmatters.poom.crons</groupId>
     <artifactId>poom-crons</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <name>Poor Man's Crontab</name>
@@ -89,32 +89,32 @@
             <dependency>
                 <groupId>org.codingmatters.poom.crons</groupId>
                 <artifactId>poom-crons-api-spec</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>1.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.codingmatters.poom.crons</groupId>
                 <artifactId>poom-crons-api</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>1.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.codingmatters.poom.crons</groupId>
                 <artifactId>poom-crons-domain</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>1.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.codingmatters.poom.crons</groupId>
                 <artifactId>poom-crons-service</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>1.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.codingmatters.poom.crons</groupId>
                 <artifactId>poom-crons-client</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>1.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.codingmatters.poom.crons</groupId>
                 <artifactId>poom-crons-cronned-harness</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>1.0.0</version>
             </dependency>
             <!--// BOM-->
         </dependencies>
