@@ -1,0 +1,36 @@
+#%RAML 1.0
+title: poom cronned
+version: v1
+baseUri: https://api.codingmatters.org/cronned
+mediaType: application/json
+
+/:
+  displayName: Task Event Triggered
+  post:
+    headers:
+      poom-event-id: string
+      poom-trigged-at: datetime-only
+      poom-task-id: string
+    body: object
+    responses:
+      204:
+      410:
+        body: Error
+      500:
+        body: Error
+
+types:
+  Error:
+    type: object
+    properties:
+      token: string
+      code:
+        enum: [
+        ILLEGAL_RANGE_SPEC,
+        UNEXPECTED_ERROR,
+        RESOURCE_NOT_FOUND,
+        INVALID_ACCOUNT,
+        INVALID_RANGE,
+        INVALID_REQUEST,
+        INVALID_PROPERTY]
+      description: string

@@ -1,0 +1,163 @@
+#%RAML 1.0
+title: poom crons
+version: v1
+baseUri: https://api.codingmatters.org/crons
+mediaType: application/json
+
+/{account}/crontab:
+  displayName: AccountCrontab
+  uriParameters:
+    account: string
+  post:
+    body: TaskSpec
+    responses:
+      201:
+        headers:
+          x-entity-id: string
+        body: Task
+      400:
+        body: Error
+      404:
+        body: Error
+      500:
+        body: Error
+  get:
+    is: [rfc7233PagedCollection: {elementType: Task}]
+
+  /{task-id}:
+    displayName: Task
+    uriParameters:
+      task-id: string
+    get:
+      responses:
+        200:
+          headers:
+            x-entity-id: string
+          body: Task
+        404:
+          body: Error
+        500:
+          body: Error
+    put:
+      body: TaskSpec
+      responses:
+        200:
+          headers:
+            x-entity-id: string
+          body: Task
+        400:
+          body: Error
+        404:
+          body: Error
+        500:
+          body: Error
+    delete:
+      responses:
+        204:
+        404:
+          body: Error
+        500:
+          body: Error
+
+
+
+
+types:
+
+  TaskSpec:
+    type: object
+    properties:
+      url: string
+      payload: object
+      scheduled:
+        type: object
+        properties:
+
+          every:
+            type: object
+            properties:
+              minutes: integer
+              hours: integer
+              days: integer
+              months: integer
+              years: integer
+              starting-at: datetime-only
+
+          at:
+            type: object
+            properties:
+              minute-of-hours: integer
+              hour-of-day: integer
+              day-of-week:
+                enum: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+              day-of-month: integer
+              day-of-year: integer
+
+  Task:
+    type: object
+    properties:
+      id:
+        type: string
+        (value-object-hint):
+           - mongo:object-id
+           - mongo:field(_id)
+      spec: TaskSpec
+      last-trig: datetime-only
+      success: boolean
+      error-count: integer
+
+  Error:
+    type: object
+    properties:
+      token: string
+      code:
+          enum: [
+          ILLEGAL_RANGE_SPEC,
+          UNEXPECTED_ERROR,
+          RESOURCE_NOT_FOUND,
+          INVALID_ACCOUNT,
+          INVALID_RANGE,
+          INVALID_REQUEST,
+          INVALID_PROPERTY]
+      description: string
+
+traits:
+   rfc7233PagedCollection:
+     usage: applied to a collection GET
+     description: pageable collection of <<elementType>>. Paging is handled with the range header (according to [RFC 7233](https://tools.ietf.org/html/rfc7233)).
+     headers:
+       range:
+         type: string
+         required: false
+     responses:
+       200:
+         description: complete list of <<elementType>> or last elements of the list of <<elementType>>
+         headers:
+           Content-Range: string
+           Accept-Range: string
+         body: <<elementType>>[]
+       206:
+         description: partial list of <<elementType>>
+         headers:
+           Content-Range: string
+           Accept-Range: string
+         body: <<elementType>>[]
+       416:
+         description: the specified range is not acceptable (Error code is ILLEGAL_RANGE_SPEC).
+         headers:
+           Content-Range: string
+           Accept-Range: string
+         body: Error
+       400:
+         description: the events is nit acceptable (Error code is ILLEGAL_REQUEST).
+         body: Error
+       404:
+         description: no containter found. Code RESOURCE_NOT_FOUND.
+         body: Error
+       500:
+         description: UNEXPECTED_ERROR.
+         body: Error
+
+annotationTypes:
+   value-object-hint:
+      type: string[]
