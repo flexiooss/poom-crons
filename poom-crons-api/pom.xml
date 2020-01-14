@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.codingmatters.poom.crons</groupId>
         <artifactId>poom-crons</artifactId>
-        <version>1.1.0</version>
+        <version>1.2.0</version>
     </parent>
 
     <artifactId>poom-crons-api</artifactId>
@@ -39,7 +39,7 @@
                     <dependency>
                         <groupId>org.codingmatters.poom.crons</groupId>
                         <artifactId>poom-crons-api-spec</artifactId>
-                        <version>1.1.0</version>
+                        <version>${project.version}</version>
                     </dependency>
                 </dependencies>
                 <executions>
