@@ -2,7 +2,6 @@ package org.codingmatters.poom.crons.domain.selector;
 
 import org.codingmatters.poom.crons.crontab.api.types.TaskSpec;
 import org.codingmatters.poom.crons.crontab.api.types.taskspec.scheduled.At;
-import org.codingmatters.poom.crons.crontab.api.types.taskspec.scheduled.Every;
 import org.codingmatters.poom.crons.domain.selector.expression.EveryDateTimeTaskSelector;
 import org.codingmatters.poom.services.logging.CategorizedLogger;
 
@@ -14,14 +13,19 @@ import java.util.Arrays;
 public class DateTimeTaskSelector implements TaskSelector {
     static private final CategorizedLogger log = CategorizedLogger.getLogger(DateTimeTaskSelector.class);
 
+    public static DateTimeTaskSelector minutesPrecision(LocalDateTime atTime) {
+        return new DateTimeTaskSelector(atTime, ChronoUnit.MINUTES);
+    }
+
+    public static DateTimeTaskSelector secondsPrecision(LocalDateTime atTime) {
+        return new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS);
+    }
+
     private final LocalDateTime atTime;
     private final ChronoUnit precision;
     private final EveryDateTimeTaskSelector everyTaskSelector;
 
-    public DateTimeTaskSelector(LocalDateTime atTime) {
-        this(atTime, ChronoUnit.MINUTES);
-    }
-    public DateTimeTaskSelector(LocalDateTime atTime, ChronoUnit precision) {
+    private DateTimeTaskSelector(LocalDateTime atTime, ChronoUnit precision) {
         this.atTime = atTime;
         this.precision = precision;
 

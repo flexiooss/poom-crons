@@ -3,7 +3,6 @@ package org.codingmatters.poom.crons.domain.selector;
 import org.codingmatters.poom.crons.crontab.api.types.TaskSpec;
 import org.codingmatters.poom.crons.crontab.api.types.taskspec.Scheduled;
 import org.codingmatters.poom.crons.crontab.api.types.taskspec.scheduled.Every;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
@@ -30,7 +29,7 @@ public class EveryExpressionTaskSelectorTest {
                 for (int hour = 0; hour < 24; hour++) {
                     LocalDateTime atTime = AT.withHour(hour).withMinute(minute).withSecond(second);
 
-                    assertTrue("selectable at " + atTime, new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS).selectable(taskSpec));
+                    assertTrue("selectable at " + atTime, DateTimeTaskSelector.secondsPrecision(atTime).selectable(taskSpec));
                 }
             }
         }
@@ -48,9 +47,9 @@ public class EveryExpressionTaskSelectorTest {
                     LocalDateTime atTime = AT.withHour(hour).withMinute(minute).withSecond(second);
 
                     if(second % 2 == 0) {
-                        assertTrue("selectable at " + atTime, new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS).selectable(taskSpec));
+                        assertTrue("selectable at " + atTime, DateTimeTaskSelector.secondsPrecision(atTime).selectable(taskSpec));
                     } else {
-                        assertFalse("not selectable at " + atTime, new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS).selectable(taskSpec));
+                        assertFalse("not selectable at " + atTime, DateTimeTaskSelector.secondsPrecision(atTime).selectable(taskSpec));
                     }
                 }
             }
@@ -68,7 +67,7 @@ public class EveryExpressionTaskSelectorTest {
                 for (int hour = 0; hour < 24; hour++) {
                     LocalDateTime atTime = AT.withHour(hour).withMinute(minute).withSecond(second);
 
-                    assertTrue("at " + atTime + " selectable", new DateTimeTaskSelector(atTime, ChronoUnit.MINUTES).selectable(taskSpec));
+                    assertTrue("at " + atTime + " selectable", DateTimeTaskSelector.minutesPrecision(atTime).selectable(taskSpec));
                 }
             }
         }
@@ -86,9 +85,9 @@ public class EveryExpressionTaskSelectorTest {
                     LocalDateTime atTime = AT.withHour(hour).withMinute(minute).withSecond(second);
 
                     if(second == 0) {
-                        assertTrue("at " + atTime + " selectable", new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS).selectable(taskSpec));
+                        assertTrue("at " + atTime + " selectable", DateTimeTaskSelector.secondsPrecision(atTime).selectable(taskSpec));
                     } else {
-                        assertFalse("at " + atTime + " not selectable", new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS).selectable(taskSpec));
+                        assertFalse("at " + atTime + " not selectable", DateTimeTaskSelector.secondsPrecision(atTime).selectable(taskSpec));
                     }
                 }
             }
@@ -101,15 +100,15 @@ public class EveryExpressionTaskSelectorTest {
                 .every(Every.builder().minutes(2L).startingAt(START).build())
                 .build()).build();
 
-        assertTrue("START", new DateTimeTaskSelector(START, ChronoUnit.MINUTES).selectable(taskSpec));
+        assertTrue("START", DateTimeTaskSelector.minutesPrecision(START).selectable(taskSpec));
 
         for (int minute = 0; minute < 60; minute++) {
             for (int second = 0; second < 60; second++) {
                 LocalDateTime atTime = AT.withMinute(minute).withSecond(second);
                 if(minute % 2 == 0) {
-                    assertTrue("at " + atTime + " selectable", new DateTimeTaskSelector(atTime, ChronoUnit.MINUTES).selectable(taskSpec));
+                    assertTrue("at " + atTime + " selectable", DateTimeTaskSelector.minutesPrecision(atTime).selectable(taskSpec));
                 } else {
-                    assertFalse("at " + atTime + " not selectable", new DateTimeTaskSelector(atTime, ChronoUnit.MINUTES).selectable(taskSpec));
+                    assertFalse("at " + atTime + " not selectable", DateTimeTaskSelector.minutesPrecision(atTime).selectable(taskSpec));
                 }
             }
         }
@@ -121,19 +120,19 @@ public class EveryExpressionTaskSelectorTest {
                 .every(Every.builder().minutes(2L).startingAt(START).build())
                 .build()).build();
 
-        assertTrue("START", new DateTimeTaskSelector(START, ChronoUnit.MINUTES).selectable(taskSpec));
+        assertTrue("START", DateTimeTaskSelector.secondsPrecision(START).selectable(taskSpec));
 
         for (int minute = 0; minute < 60; minute++) {
             for (int second = 0; second < 60; second++) {
                 LocalDateTime atTime = AT.withMinute(minute).withSecond(second);
                 if(second == 0) {
                     if (minute % 2 == 0) {
-                        assertTrue("at " + atTime + " selectable", new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS).selectable(taskSpec));
+                        assertTrue("at " + atTime + " selectable", DateTimeTaskSelector.secondsPrecision(atTime).selectable(taskSpec));
                     } else {
-                        assertFalse("at " + atTime + " not selectable", new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS).selectable(taskSpec));
+                        assertFalse("at " + atTime + " not selectable", DateTimeTaskSelector.secondsPrecision(atTime).selectable(taskSpec));
                     }
                 } else {
-                    assertFalse("at " + atTime + " not selectable", new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS).selectable(taskSpec));
+                    assertFalse("at " + atTime + " not selectable", DateTimeTaskSelector.secondsPrecision(atTime).selectable(taskSpec));
                 }
             }
         }
@@ -150,7 +149,7 @@ public class EveryExpressionTaskSelectorTest {
             for (int minute = 0; minute < 60; minute++) {
                 for (int second = 0; second < 60; second++) {
                     LocalDateTime atTime = AT.withHour(hour).withMinute(minute).withSecond(second);
-                    DateTimeTaskSelector selector = new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS);
+                    DateTimeTaskSelector selector = DateTimeTaskSelector.secondsPrecision(atTime);
 
                     if(second == 0 && minute == 0 && hour % x == 0) {
                         assertTrue("selectable at " + atTime, selector.selectable(taskSpec));
@@ -174,7 +173,7 @@ public class EveryExpressionTaskSelectorTest {
                 for (int minute = 0; minute < 60; minute++) {
                     for (int second = 0; second < 60; second++) {
                         LocalDateTime atTime = START.plusDays(day).withHour(hour).withMinute(minute).withSecond(second);
-                        DateTimeTaskSelector selector = new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS);
+                        DateTimeTaskSelector selector = DateTimeTaskSelector.secondsPrecision(atTime);
 
                         if(second == 0 && minute == 0 && hour == 0 && day % x == 0) {
                             assertTrue("selectable at " + atTime, selector.selectable(taskSpec));
@@ -199,7 +198,7 @@ public class EveryExpressionTaskSelectorTest {
                 for (int minute = 0; minute < 60; minute++) {
                     for (int second = 0; second < 60; second++) {
                         LocalDateTime atTime = START.plusMonths(month).withHour(hour).withMinute(minute).withSecond(second);
-                        DateTimeTaskSelector selector = new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS);
+                        DateTimeTaskSelector selector = DateTimeTaskSelector.secondsPrecision(atTime);
 
                         if(second == 0 && minute == 0 && hour == 0 && month % x == 0) {
                             assertTrue("selectable at " + atTime, selector.selectable(taskSpec));
@@ -224,7 +223,7 @@ public class EveryExpressionTaskSelectorTest {
                 for (int minute = 0; minute < 60; minute++) {
                     for (int second = 0; second < 60; second++) {
                         LocalDateTime atTime = START.plusYears(year).withHour(hour).withMinute(minute).withSecond(second);
-                        DateTimeTaskSelector selector = new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS);
+                        DateTimeTaskSelector selector = DateTimeTaskSelector.secondsPrecision(atTime);
 
                         if(second == 0 && minute == 0 && hour == 0 && year % x == 0) {
                             assertTrue("selectable at " + atTime, selector.selectable(taskSpec));
