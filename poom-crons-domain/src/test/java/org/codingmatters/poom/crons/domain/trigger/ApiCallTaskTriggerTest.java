@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.codingmatters.poom.services.tests.DateMatchers.around;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ApiCallTaskTriggerTest {
 
