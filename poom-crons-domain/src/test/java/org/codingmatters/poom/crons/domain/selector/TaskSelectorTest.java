@@ -16,6 +16,7 @@ public class TaskSelectorTest {
 
     private static final LocalDateTime AT_2013_04_05_10_32_42_728 = LocalDateTime.of(2013, Month.APRIL, 5, 10, 32, 42, 728);
     private static final LocalDateTime AT_2013_04_05_10_32_42_000 = LocalDateTime.of(2013, Month.APRIL, 5, 10, 32, 42, 0);
+    private static final LocalDateTime AT_2013_04_05_10_32_00_000 = LocalDateTime.of(2013, Month.APRIL, 5, 10, 32, 00, 0);
 
     @Test
     public void givenAtExpression__whenMinuteOfHour__thenSelectableAtMinute() throws Exception {
@@ -116,7 +117,28 @@ public class TaskSelectorTest {
     }
 
     @Test
-    public void givenEveryExpression__whenEvery1Minute__thenIsAlwaysSelectable() throws Exception {
+    public void givenEveryExpression_andSecondsPrecision__whenEvery1Minute__thenIsSelectableOnFirstMinuteSecond() throws Exception {
+        for (int i = 0; i < 500; i++) {
+            int offset = i;
+            assertTrue("" + i, new DateTimeTaskSelector(AT_2013_04_05_10_32_42_728, ChronoUnit.MINUTES).selectable(TaskSpec.builder().scheduled(scheduled -> scheduled
+                    .every(every -> every.startingAt(AT_2013_04_05_10_32_42_000.minusMinutes(offset)).minutes(1L)
+                    )).build()));
+        }
+    }
+
+    @Test
+    public void givenEveryExpression_andMinutesPrecision__whenEvery1Minute__thenIsAlwaysSelectable() throws Exception {
+        for (int i = 0; i < 500; i++) {
+            int offset = i;
+            assertTrue("" + i, new DateTimeTaskSelector(AT_2013_04_05_10_32_42_728, ChronoUnit.MINUTES).selectable(TaskSpec.builder().scheduled(scheduled -> scheduled
+                    .every(every -> every.startingAt(AT_2013_04_05_10_32_42_000.minusMinutes(offset)).minutes(1L)
+                    )).build()));
+        }
+    }
+
+
+    @Test
+    public void givenEveryExpression_andDefaultPrecision__whenEvery1Minute__thenIsAlwaysSelectable() throws Exception {
         for (int i = 0; i < 500; i++) {
             int offset = i;
             assertTrue("" + i, new DateTimeTaskSelector(AT_2013_04_05_10_32_42_728).selectable(TaskSpec.builder().scheduled(scheduled -> scheduled
@@ -130,6 +152,10 @@ public class TaskSelectorTest {
         for (int i = 0; i < 500; i++) {
             int offset = i;
             if(i % 2 == 0) {
+                assertTrue("" + i, new DateTimeTaskSelector(AT_2013_04_05_10_32_42_728).selectable(TaskSpec.builder().scheduled(scheduled -> scheduled
+                        .every(every -> every.startingAt(AT_2013_04_05_10_32_42_000.minusMinutes(offset)).minutes(2L)
+                        )).build()));
+
                 assertTrue("" + i, new DateTimeTaskSelector(AT_2013_04_05_10_32_42_728).selectable(TaskSpec.builder().scheduled(scheduled -> scheduled
                         .every(every -> every.startingAt(AT_2013_04_05_10_32_42_000.minusMinutes(offset)).minutes(2L)
                         )).build()));
