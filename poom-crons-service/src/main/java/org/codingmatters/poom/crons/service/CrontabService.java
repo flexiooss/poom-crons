@@ -19,6 +19,30 @@ import java.util.function.Function;
 public class CrontabService {
 
     static private final CategorizedLogger log = CategorizedLogger.getLogger(CrontabService.class);
+    private final Precision precision;
+
+    public enum Precision {
+        SECONDS(TimeUnit.SECONDS) {
+            @Override
+            public DateTimeTaskSelector selector(LocalDateTime now) {
+                return DateTimeTaskSelector.secondsPrecision(now);
+            }
+        },
+        MINUTES(TimeUnit.MINUTES) {
+            @Override
+            public DateTimeTaskSelector selector(LocalDateTime now) {
+                return DateTimeTaskSelector.minutesPrecision(now);
+            }
+        };
+
+        public final TimeUnit timeUnit;
+
+        Precision(TimeUnit timeUnit) {
+            this.timeUnit = timeUnit;
+        }
+
+        public abstract DateTimeTaskSelector selector(LocalDateTime now) ;
+    }
 
     private final Crontab crontab;
     private final PoomCronsApi api;
@@ -36,6 +60,16 @@ public class CrontabService {
             String[] initialAccounts,
             TaskTrigger trigger,
             ForkJoinPool pool) throws RepositoryException {
+        this(repositoryForAccount, initialAccounts, trigger, pool, Precision.MINUTES);
+    }
+
+    public CrontabService(
+            Function<String, Repository<Task, Void>> repositoryForAccount,
+            String[] initialAccounts,
+            TaskTrigger trigger,
+            ForkJoinPool pool,
+            Precision precision) throws RepositoryException {
+        this.precision = precision;
         this.crontab = new Crontab(repositoryForAccount).loadAccounts(initialAccounts);
 
         this.api = new PoomCronsApi(account -> this.crontab.forAccount(account));
@@ -52,8 +86,10 @@ public class CrontabService {
     public void start() {
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
         int nextMinuteStart = 60 - LocalDateTime.now().getSecond();
-        this.scheduler.scheduleAtFixedRate(this::checkedTick, nextMinuteStart, 60, TimeUnit.SECONDS);
-        this.scheduler.scheduleAtFixedRate(this::cleanupFailedTasks, nextMinuteStart + 30, 60, TimeUnit.SECONDS);
+
+
+        this.scheduler.scheduleAtFixedRate(this::checkedTick, nextMinuteStart, TimeUnit.SECONDS.convert(1, this.precision.timeUnit), TimeUnit.SECONDS);
+        this.scheduler.scheduleAtFixedRate(this::cleanupFailedTasks, nextMinuteStart + 30, TimeUnit.SECONDS.convert(1, this.precision.timeUnit), TimeUnit.SECONDS);
         log.info("started crontab service");
     }
 
@@ -67,7 +103,8 @@ public class CrontabService {
     }
 
     private void tick() throws RepositoryException, ExecutionException, InterruptedException {
-        List<Entity<Task>> selectable = this.crontab.selectable(new DateTimeTaskSelector(UTC.now()), this.pool);
+        DateTimeTaskSelector selector = this.precision.selector(UTC.now());
+        List<Entity<Task>> selectable = this.crontab.selectable(selector, this.pool);
         if(! selectable.isEmpty()) {
             List<Entity<Task>> executed = this.executor.execute(selectable);
             for (Entity<Task> task : executed) {

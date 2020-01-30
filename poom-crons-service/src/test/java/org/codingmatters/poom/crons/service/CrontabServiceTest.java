@@ -63,7 +63,7 @@ public class CrontabServiceTest {
                 )
                 .build());
 
-        CrontabService service = new CrontabService(this.repositoryForAccount, new String[] {"my-account"}, this.successTrigger, new ForkJoinPool(4));
+        CrontabService service = new CrontabService(this.repositoryForAccount, new String[] {"my-account"}, this.successTrigger, new ForkJoinPool(4), CrontabService.Precision.SECONDS);
 
         try {
             service.start();

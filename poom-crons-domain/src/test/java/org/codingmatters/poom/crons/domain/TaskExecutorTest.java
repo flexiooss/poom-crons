@@ -16,7 +16,7 @@ import java.util.concurrent.ForkJoinPool;
 
 import static org.codingmatters.poom.services.tests.DateMatchers.around;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TaskExecutorTest {
 

@@ -2,17 +2,38 @@ package org.codingmatters.poom.crons.domain.selector;
 
 import org.codingmatters.poom.crons.crontab.api.types.TaskSpec;
 import org.codingmatters.poom.crons.crontab.api.types.taskspec.scheduled.At;
-import org.codingmatters.poom.crons.crontab.api.types.taskspec.scheduled.Every;
+import org.codingmatters.poom.crons.domain.selector.expression.EveryDateTimeTaskSelector;
+import org.codingmatters.poom.services.logging.CategorizedLogger;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 
 public class DateTimeTaskSelector implements TaskSelector {
-    private final LocalDateTime atTime;
+    static private final CategorizedLogger log = CategorizedLogger.getLogger(DateTimeTaskSelector.class);
 
-    public DateTimeTaskSelector(LocalDateTime atTime) {
+    public static DateTimeTaskSelector minutesPrecision(LocalDateTime atTime) {
+        return new DateTimeTaskSelector(atTime, ChronoUnit.MINUTES);
+    }
+
+    public static DateTimeTaskSelector secondsPrecision(LocalDateTime atTime) {
+        return new DateTimeTaskSelector(atTime, ChronoUnit.SECONDS);
+    }
+
+    private final LocalDateTime atTime;
+    private final ChronoUnit precision;
+    private final EveryDateTimeTaskSelector everyTaskSelector;
+
+    private DateTimeTaskSelector(LocalDateTime atTime, ChronoUnit precision) {
         this.atTime = atTime;
+        this.precision = precision;
+
+        if(!Arrays.asList(ChronoUnit.MINUTES, ChronoUnit.SECONDS).contains(precision)) {
+            throw new InstantiationError("precision : " + precision + " is not supported");
+        }
+
+        this.everyTaskSelector = new EveryDateTimeTaskSelector(this.atTime, this.precision);
     }
 
     @Override
@@ -21,7 +42,7 @@ public class DateTimeTaskSelector implements TaskSelector {
             return this.selectableAt(spec.scheduled().at());
         }
         if(spec.opt().scheduled().every().isPresent()) {
-            return this.selectableEvery(spec.scheduled().every());
+            return this.everyTaskSelector.selectable(spec.scheduled().every());
         }
         return false;
     }
@@ -43,36 +64,6 @@ public class DateTimeTaskSelector implements TaskSelector {
             return false;
         }
         return true;
-    }
-
-    private boolean selectableEvery(Every every) {
-        if(every.opt().minutes().isPresent()) {
-            return Math.abs(ChronoUnit.MINUTES.between(this.atTime, every.startingAt())) % every.minutes() == 0L;
-        }
-        if(every.opt().hours().isPresent()) {
-            return this.atTime.getMinute() == every.startingAt().getMinute() &&
-                    Math.abs(ChronoUnit.HOURS.between(this.atTime, every.startingAt())) % every.hours() == 0L;
-        }
-        if(every.opt().days().isPresent()) {
-            return this.atTime.getMinute() == every.startingAt().getMinute() &&
-                    this.atTime.getHour() == every.startingAt().getHour() &&
-                    Math.abs(ChronoUnit.DAYS.between(this.atTime, every.startingAt())) % every.days() == 0L;
-        }
-        if(every.opt().months().isPresent()) {
-            return this.atTime.getMinute() == every.startingAt().getMinute() &&
-                    this.atTime.getHour() == every.startingAt().getHour() &&
-                    this.atTime.getDayOfMonth() == every.startingAt().getDayOfMonth() &&
-                    Math.abs(ChronoUnit.MONTHS.between(this.atTime, every.startingAt())) % every.months() == 0L;
-        }
-        if(every.opt().years().isPresent()) {
-            return this.atTime.getMinute() == every.startingAt().getMinute() &&
-                    this.atTime.getHour() == every.startingAt().getHour() &&
-                    this.atTime.getDayOfMonth() == every.startingAt().getDayOfMonth() &&
-                    this.atTime.getMonthValue() == every.startingAt().getMonthValue() &&
-                    Math.abs(ChronoUnit.YEARS.between(this.atTime, every.startingAt())) % every.years() == 0L;
-        }
-
-        return false;
     }
 
     static public boolean sameDayOfWeek(At.DayOfWeek atDay, DayOfWeek javaDay) {
