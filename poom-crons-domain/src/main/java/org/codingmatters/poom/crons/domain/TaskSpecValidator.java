@@ -27,7 +27,8 @@ public class TaskSpecValidator {
         }
 
         if(this.spec.opt().scheduled().at().isPresent()) {
-            if(! (this.spec.opt().scheduled().at().minuteOfHours().isPresent() ||
+            if(! (this.spec.opt().scheduled().at().secondOfMinute().isPresent() ||
+                    this.spec.opt().scheduled().at().minuteOfHours().isPresent() ||
                     this.spec.opt().scheduled().at().hourOfDay().isPresent() ||
                     this.spec.opt().scheduled().at().dayOfWeek().isPresent() ||
                     this.spec.opt().scheduled().at().dayOfMonth().isPresent() ||
@@ -78,12 +79,18 @@ public class TaskSpecValidator {
                     return TaskSpecValidation.invalidSpec("when providing a minute-of-hours constraint, must be in 0-59 range");
                 }
             }
+            if(this.spec.opt().scheduled().at().secondOfMinute().isPresent()) {
+                if(this.spec.scheduled().at().secondOfMinute() < 0 || this.spec.scheduled().at().secondOfMinute() > 59) {
+                    return TaskSpecValidation.invalidSpec("when providing a second-of-minute constraint, must be in 0-59 range");
+                }
+            }
         }
         if(this.spec.opt().scheduled().every().isPresent()) {
             if(! this.spec.opt().scheduled().every().startingAt().isPresent()) {
                 return TaskSpecValidation.invalidSpec("when providing an every expression, must at least provide a starting-at field");
             }
             int fieldDefined = 0;
+            fieldDefined += this.spec.opt().scheduled().every().seconds().isPresent() ? 1 : 0;
             fieldDefined += this.spec.opt().scheduled().every().minutes().isPresent() ? 1 : 0;
             fieldDefined += this.spec.opt().scheduled().every().hours().isPresent() ? 1 : 0;
             fieldDefined += this.spec.opt().scheduled().every().days().isPresent() ? 1 : 0;
