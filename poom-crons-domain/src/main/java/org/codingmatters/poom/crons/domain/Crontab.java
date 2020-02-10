@@ -64,7 +64,7 @@ public class Crontab {
 
     public synchronized List<Entity<Task>> selectable(TaskSelector selector, ForkJoinPool pool) throws RepositoryException, ExecutionException, InterruptedException {
         List<Entity<Task>> tasks = this.tasks();
-        List<Entity<Task>> result = pool.submit(() -> tasks.parallelStream()
+        List<Entity<Task>> result = pool.submit(() -> tasks.stream()
                 .filter(taskEntity -> selector.selectable(taskEntity.value().spec()))
                 .collect(Collectors.toList())
         ).get();
