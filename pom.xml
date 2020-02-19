@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.codingmatters.poom</groupId>
         <artifactId>poom-services</artifactId>
-        <version>1.23.0</version>
+        <version>1.24.0</version>
     </parent>
 
     <groupId>org.codingmatters.poom.crons</groupId>
@@ -80,6 +80,10 @@
         <module>poom-crons-cronned-harness</module>
     </modules>
 
+    <properties>
+        <flexio-commons.version>1.21.0</flexio-commons.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.codingmatters.poom</groupId>
@@ -92,7 +96,7 @@
             <dependency>
                 <groupId>io.flexio.commons</groupId>
                 <artifactId>flexio-commons</artifactId>
-                <version>1.20.0</version>
+                <version>${flexio-commons.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -138,7 +142,7 @@
                 <plugin>
                     <groupId>io.flexio.io</groupId>
                     <artifactId>flexio-mongo-io-maven-plugin</artifactId>
-                    <version>1.20.0</version>
+                    <version>${flexio-commons.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
