@@ -8,6 +8,7 @@ import org.codingmatters.poom.crons.domain.trigger.TaskTrigger;
 import org.codingmatters.poom.services.domain.exceptions.RepositoryException;
 import org.codingmatters.poom.services.domain.repositories.Repository;
 import org.codingmatters.poom.services.logging.CategorizedLogger;
+import org.codingmatters.poom.services.support.Env;
 import org.codingmatters.poom.services.support.date.UTC;
 import org.codingmatters.poom.servives.domain.entities.Entity;
 
@@ -19,6 +20,8 @@ import java.util.function.Function;
 public class CrontabService {
 
     static private final CategorizedLogger log = CategorizedLogger.getLogger(CrontabService.class);
+    private static final String CRON_ERROR_THRESHOLD = "CRON_ERROR_THRESHOLD";
+    public static final String CRON_ERROR_THRESHOLD_DEFAULT = "30";
     private final Precision precision;
 
     public enum Precision {
@@ -53,7 +56,7 @@ public class CrontabService {
     private TaskExecutor executor;
 
     private ScheduledExecutorService scheduler;
-    private Long errorThreshold = 3L;
+    private final Long errorThreshold;
 
     public CrontabService(
             Function<String, Repository<Task, Void>> repositoryForAccount,
@@ -77,6 +80,7 @@ public class CrontabService {
         this.pool = pool;
 
         this.executor = new TaskExecutor(this.pool, this.trigger);
+        errorThreshold = Env.optional(CRON_ERROR_THRESHOLD).orElse(new Env.Var(CRON_ERROR_THRESHOLD_DEFAULT)).asLong();
     }
 
     public PoomCronsApi api() {
