@@ -90,7 +90,7 @@ public class CrontabServiceTest {
     @Test
     public void givenATaskWithFailures__whenReachingThreErrorThreshold__thenTaskIsEvicted() throws Exception {
         this.repositoryForAccount.apply("my-account").create(Task.builder()
-                .errorCount(2L)
+                .errorCount(Long.parseLong(CrontabService.CRON_ERROR_THRESHOLD_DEFAULT) - 1L)
                 .spec(spec -> spec
                         .url("my-url")
                         .scheduled(scheduled -> scheduled.every(every -> every
