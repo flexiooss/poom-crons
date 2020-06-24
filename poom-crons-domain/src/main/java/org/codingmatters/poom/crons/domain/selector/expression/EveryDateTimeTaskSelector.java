@@ -2,9 +2,11 @@ package org.codingmatters.poom.crons.domain.selector.expression;
 
 import org.codingmatters.poom.crons.crontab.api.types.taskspec.scheduled.Every;
 import org.codingmatters.poom.services.logging.CategorizedLogger;
+import org.codingmatters.poom.services.support.date.UTC;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.TimeZone;
 
 public class EveryDateTimeTaskSelector {
     static private final CategorizedLogger log = CategorizedLogger.getLogger(EveryDateTimeTaskSelector.class);
@@ -17,34 +19,36 @@ public class EveryDateTimeTaskSelector {
         this.precision = precision;
     }
 
-    public boolean selectable(Every every) {
-        LocalDateTime startingAt = this.atPrecision(every.startingAt());
+    public boolean selectable(Every every, TimeZone tz) {
+        LocalDateTime startingAt = UTC.at(this.atPrecision(every.startingAt()), tz);
+        LocalDateTime now = UTC.at(this.atTime, tz);
+
         if(every.opt().seconds().isPresent()) {
             if(this.precision == ChronoUnit.MINUTES) {
                 log.warn("task spec on every x seconds cannot be executed while precision is " + this.precision);
                 return false;
             }
-            return Math.abs(ChronoUnit.SECONDS.between(this.atTime, startingAt)) % every.seconds() == 0L;
+            return Math.abs(ChronoUnit.SECONDS.between(now, startingAt)) % every.seconds() == 0L;
         }
         if(every.opt().minutes().isPresent()) {
             return this.secondMatches(startingAt) &&
-                    Math.abs(ChronoUnit.MINUTES.between(this.atTime, startingAt)) % every.minutes() == 0L;
+                    Math.abs(ChronoUnit.MINUTES.between(now, startingAt)) % every.minutes() == 0L;
         }
         if(every.opt().hours().isPresent()) {
             return this.minuteMatches(startingAt) &&
-                    Math.abs(ChronoUnit.HOURS.between(this.atTime, startingAt)) % every.hours() == 0L;
+                    Math.abs(ChronoUnit.HOURS.between(now, startingAt)) % every.hours() == 0L;
         }
         if(every.opt().days().isPresent()) {
             return this.hourMatches(startingAt) &&
-                    Math.abs(ChronoUnit.DAYS.between(this.atTime, startingAt)) % every.days() == 0L;
+                    Math.abs(ChronoUnit.DAYS.between(now, startingAt)) % every.days() == 0L;
         }
         if(every.opt().months().isPresent()) {
             return this.dayOfMonthMatches(startingAt) &&
-                    Math.abs(ChronoUnit.MONTHS.between(this.atTime, startingAt)) % every.months() == 0L;
+                    Math.abs(ChronoUnit.MONTHS.between(now, startingAt)) % every.months() == 0L;
         }
         if(every.opt().years().isPresent()) {
             return this.monthMatches(startingAt) &&
-                    Math.abs(ChronoUnit.YEARS.between(this.atTime, startingAt)) % every.years() == 0L;
+                    Math.abs(ChronoUnit.YEARS.between(now, startingAt)) % every.years() == 0L;
         }
 
         return false;
