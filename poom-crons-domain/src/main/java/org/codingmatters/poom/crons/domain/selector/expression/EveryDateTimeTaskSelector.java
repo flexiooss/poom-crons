@@ -20,8 +20,10 @@ public class EveryDateTimeTaskSelector {
     }
 
     public boolean selectable(Every every, TimeZone tz) {
-        LocalDateTime startingAt = UTC.at(this.atPrecision(every.startingAt()), tz);
+        LocalDateTime startingAt = this.atPrecision(every.startingAt());
         LocalDateTime now = UTC.at(this.atTime, tz);
+
+        EveryMatcher matcher = new EveryMatcher(now, this.precision);
 
         if(every.opt().seconds().isPresent()) {
             if(this.precision == ChronoUnit.MINUTES) {
@@ -31,51 +33,29 @@ public class EveryDateTimeTaskSelector {
             return Math.abs(ChronoUnit.SECONDS.between(now, startingAt)) % every.seconds() == 0L;
         }
         if(every.opt().minutes().isPresent()) {
-            return this.secondMatches(startingAt) &&
+            return matcher.secondMatches(startingAt) &&
                     Math.abs(ChronoUnit.MINUTES.between(now, startingAt)) % every.minutes() == 0L;
         }
         if(every.opt().hours().isPresent()) {
-            return this.minuteMatches(startingAt) &&
+            return matcher.minuteMatches(startingAt) &&
                     Math.abs(ChronoUnit.HOURS.between(now, startingAt)) % every.hours() == 0L;
         }
         if(every.opt().days().isPresent()) {
-            return this.hourMatches(startingAt) &&
+            return matcher.hourMatches(startingAt) &&
                     Math.abs(ChronoUnit.DAYS.between(now, startingAt)) % every.days() == 0L;
         }
         if(every.opt().months().isPresent()) {
-            return this.dayOfMonthMatches(startingAt) &&
+            return matcher.dayOfMonthMatches(startingAt) &&
                     Math.abs(ChronoUnit.MONTHS.between(now, startingAt)) % every.months() == 0L;
         }
         if(every.opt().years().isPresent()) {
-            return this.monthMatches(startingAt) &&
+            return matcher.monthMatches(startingAt) &&
                     Math.abs(ChronoUnit.YEARS.between(now, startingAt)) % every.years() == 0L;
         }
 
         return false;
     }
 
-    private boolean monthMatches(LocalDateTime startingAt) {
-        return this.dayOfMonthMatches(startingAt) && this.atTime.getMonthValue() == startingAt.getMonthValue();
-    }
-
-    private boolean dayOfMonthMatches(LocalDateTime startingAt) {
-        return this.hourMatches(startingAt) && this.atTime.getDayOfMonth() == startingAt.getDayOfMonth();
-    }
-
-    private boolean hourMatches(LocalDateTime startingAt) {
-        return this.minuteMatches(startingAt) && this.atTime.getHour() == startingAt.getHour();
-    }
-
-    private boolean minuteMatches(LocalDateTime startingAt) {
-        return this.secondMatches(startingAt) && this.atTime.getMinute() == startingAt.getMinute();
-    }
-
-    private boolean secondMatches(LocalDateTime startingAt) {
-        if(this.precision.equals(ChronoUnit.MINUTES)) {
-            return true;
-        }
-        return this.atTime.getSecond() == startingAt.getSecond();
-    }
 
     private LocalDateTime atPrecision(LocalDateTime dt) {
         if(this.precision.equals(ChronoUnit.MINUTES)) {
