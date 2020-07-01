@@ -65,10 +65,19 @@ public class Crontab {
     public synchronized List<Entity<Task>> selectable(TaskSelector selector, ForkJoinPool pool) throws RepositoryException, ExecutionException, InterruptedException {
         List<Entity<Task>> tasks = this.tasks();
         List<Entity<Task>> result = pool.submit(() -> tasks.stream()
-                .filter(taskEntity -> selector.selectable(taskEntity.value().spec()))
+                .filter(taskEntity -> this.taskIsSelectable(selector, taskEntity))
                 .collect(Collectors.toList())
         ).get();
         return result;
+    }
+
+    private boolean taskIsSelectable(TaskSelector selector, Entity<Task> taskEntity) {
+        try {
+            return selector.selectable(taskEntity.value().spec());
+        } catch (Exception e) {
+            log.error("GRAVE : unexpected exception while testing task selection:  " + taskEntity, e);
+            return false;
+        }
     }
 
     public void update(Entity<Task> task, Task withValue) throws RepositoryException {
