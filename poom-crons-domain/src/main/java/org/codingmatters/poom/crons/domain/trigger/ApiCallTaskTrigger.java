@@ -36,6 +36,10 @@ public class ApiCallTaskTrigger implements TaskTrigger {
     @Override
     public TriggerResult trig(Task task, LocalDateTime triggedAt, String eventId) {
         PoomCronnedClient client = this.clientProvider.apply(task.spec());
+        if(client == null) {
+            log.error("[GRAVE] failed getting API client while triggering with task spec : " + task);
+            return new TriggerResult(false, false);
+        }
 
         try {
             TaskEventTriggeredPostResponse response = client.taskEventTriggered().post(TaskEventTriggeredPostRequest.builder()
@@ -57,6 +61,9 @@ public class ApiCallTaskTrigger implements TaskTrigger {
             }
         } catch (IOException e) {
             log.error("failed triggering with task spec : " + task, e);
+            return new TriggerResult(false, false);
+        } catch (Exception e) {
+            log.error("unexpected error triggering with task spec : " + task, e);
             return new TriggerResult(false, false);
         }
     }
