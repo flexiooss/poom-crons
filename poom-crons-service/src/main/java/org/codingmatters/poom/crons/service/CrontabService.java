@@ -126,9 +126,8 @@ public class CrontabService {
                 }
             }
         } catch (RepositoryException e) {
-            e.printStackTrace();
+            log.error("error cleaning failed tasks", e);
         }
-
     }
 
     public void stop() {
