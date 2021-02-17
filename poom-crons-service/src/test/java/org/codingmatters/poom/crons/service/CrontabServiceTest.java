@@ -13,6 +13,7 @@ import org.codingmatters.poom.services.tests.Eventually;
 import org.codingmatters.poom.servives.domain.entities.PagedEntityList;
 import org.junit.Test;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +24,8 @@ import static org.hamcrest.Matchers.is;
 
 public class CrontabServiceTest {
     static private final CategorizedLogger log = CategorizedLogger.getLogger(CrontabServiceTest.class);
+
+    static Eventually eventually = Eventually.timeout(2, TimeUnit.MINUTES);
 
     private final AtomicLong hits = new AtomicLong(0L);
 
@@ -53,12 +56,13 @@ public class CrontabServiceTest {
 
     @Test
     public void givenATaskInRepo__whenAddingTask_andTicking__thenBothTasksAreExecuted() throws Exception {
+        LocalDateTime startingAt = UTC.now().minusHours(1L).withSecond(0)/*.plusSeconds(5L)*/.withNano(0);
         this.repositoryForAccount.apply("my-account").create(Task.builder()
                 .spec(spec -> spec
                         .url("my-url")
                         .scheduled(scheduled -> scheduled.every(every -> every
                                 .minutes(1L)
-                                .startingAt(UTC.now().minusHours(1L).withSecond(0).withNano(0))
+                                .startingAt(startingAt)
                         ))
                 )
                 .build());
@@ -74,14 +78,13 @@ public class CrontabServiceTest {
                             .url("my-url")
                             .scheduled(scheduled -> scheduled.every(every -> every
                                     .minutes(1L)
-                                    .startingAt(UTC.now().minusHours(1L).withSecond(0).withNano(0))
+                                    .startingAt(startingAt)
                             ))
                     )
                     .build())
                     .opt().status201()
                     .orElseThrow(() -> new AssertionError("failed scheduling task"));
-
-            Eventually.timeout(1, TimeUnit.MINUTES).assertThat(() -> hits.get(), is(2L));
+            eventually.assertThat(() -> hits.get(), is(2L));
         } finally {
             service.stop();
         }
@@ -105,7 +108,7 @@ public class CrontabServiceTest {
         try {
             service.start();
 
-            Eventually.timeout(2, TimeUnit.MINUTES).assertThat(() -> this.repositoryForAccount.apply("my-account").all(0, 0).total(), is(0L));
+            eventually.assertThat(() -> this.repositoryForAccount.apply("my-account").all(0, 0).total(), is(0L));
         } finally {
             service.stop();
         }
