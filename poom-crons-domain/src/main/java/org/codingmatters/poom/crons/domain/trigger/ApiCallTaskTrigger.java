@@ -12,6 +12,7 @@ import org.codingmatters.poom.services.support.date.UTC;
 import org.codingmatters.rest.api.client.UrlProvider;
 import org.codingmatters.rest.api.client.okhttp.HttpClientWrapper;
 import org.codingmatters.rest.api.client.okhttp.OkHttpRequesterFactory;
+import org.codingmatters.value.objects.values.ObjectValue;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -37,7 +38,8 @@ public class ApiCallTaskTrigger implements TaskTrigger {
     public TriggerResult trig(Task task, LocalDateTime triggedAt, String eventId) {
         PoomCronnedClient client = this.clientProvider.apply(task.spec());
         if(client == null) {
-            log.error("[GRAVE] failed getting API client while triggering with task spec : " + task);
+            log.error("[GRAVE] failed getting API client while triggering with task spec : " + task
+                    .withChangedSpec(spec -> spec.payload(ObjectValue.builder().build())));
             return new TriggerResult(false, false);
         }
 
@@ -50,20 +52,25 @@ public class ApiCallTaskTrigger implements TaskTrigger {
                     .build());
 
             if(response.opt().status204().isPresent()) {
-                log.debug("triggered {}", task);
+                log.debug("triggered {}", task
+                        .withChangedSpec(spec -> spec.payload(ObjectValue.builder().build())));
                 return new TriggerResult(true);
             } else if (response.opt().status410().isPresent()) {
-                log.info("cronned service signaled as gone while triggering {}", task);
+                log.info("cronned service signaled as gone while triggering {}", task
+                        .withChangedSpec(spec -> spec.payload(ObjectValue.builder().build())));
                 return new TriggerResult(false, true);
             } else {
-                log.error("error while triggering {} : {}", task, response);
+                log.error("error while triggering {} : {}", task
+                        .withChangedSpec(spec -> spec.payload(ObjectValue.builder().build())), response);
                 return new TriggerResult(false, false);
             }
         } catch (IOException e) {
-            log.error("failed triggering with task spec : " + task, e);
+            log.error("failed triggering with task spec : " + task
+                    .withChangedSpec(spec -> spec.payload(ObjectValue.builder().build())), e);
             return new TriggerResult(false, false);
         } catch (Exception e) {
-            log.error("unexpected error triggering with task spec : " + task, e);
+            log.error("unexpected error triggering with task spec : " + task
+                    .withChangedSpec(spec -> spec.payload(ObjectValue.builder().build())), e);
             return new TriggerResult(false, false);
         }
     }
