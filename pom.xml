@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.codingmatters.poom</groupId>
         <artifactId>poom-services</artifactId>
-        <version>1.85.0</version>
+        <version>1.86.0-SNAPSHOT</version>
     </parent>
 
     <groupId>org.codingmatters.poom.crons</groupId>
@@ -81,7 +81,7 @@
     </modules>
 
     <properties>
-        <flexio-commons.version>1.86.0</flexio-commons.version>
+        <flexio-commons.version>1.87.0-SNAPSHOT</flexio-commons.version>
     </properties>
 
     <dependencies>
