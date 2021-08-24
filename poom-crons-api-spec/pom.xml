@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.codingmatters.poom.crons</groupId>
         <artifactId>poom-crons</artifactId>
-        <version>1.76.0</version>
+        <version>1.77.0</version>
     </parent>
 
     <artifactId>poom-crons-api-spec</artifactId>
