@@ -81,7 +81,7 @@
     </modules>
 
     <properties>
-        <flexio-commons.version>1.93.0</flexio-commons.version>
+        <flexio-commons.version>1.94.0-SNAPSHOT</flexio-commons.version>
     </properties>
 
     <dependencies>
