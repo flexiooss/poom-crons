@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.codingmatters.poom.crons</groupId>
         <artifactId>poom-crons</artifactId>
-        <version>1.83.0</version>
+        <version>1.84.0</version>
     </parent>
 
     <artifactId>poom-crons-api</artifactId>
@@ -35,7 +35,7 @@
 
         <dependency>
             <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver</artifactId>
+            <artifactId>mongodb-driver-sync</artifactId>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
