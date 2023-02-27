@@ -3,7 +3,7 @@ package org.codingmatters.poom.crons.service.handler;
 import org.codingmatters.poom.crons.crontab.api.types.Task;
 import org.codingmatters.poom.services.domain.exceptions.RepositoryException;
 import org.codingmatters.poom.services.domain.repositories.inmemory.InMemoryRepository;
-import org.codingmatters.poom.servives.domain.entities.PagedEntityList;
+import org.codingmatters.poom.services.domain.entities.PagedEntityList;
 
 public class TestTaskRepository extends InMemoryRepository<Task, Void> {
     @Override

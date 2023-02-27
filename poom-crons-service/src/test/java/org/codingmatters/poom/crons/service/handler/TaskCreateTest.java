@@ -5,7 +5,7 @@ import org.codingmatters.poom.crons.crontab.api.AccountCrontabPostResponse;
 import org.codingmatters.poom.crons.crontab.api.types.Task;
 import org.codingmatters.poom.crons.crontab.api.types.TaskSpec;
 import org.codingmatters.poom.services.domain.repositories.Repository;
-import org.codingmatters.poom.servives.domain.entities.Entity;
+import org.codingmatters.poom.services.domain.entities.Entity;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;

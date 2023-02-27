@@ -10,7 +10,7 @@ import org.codingmatters.poom.services.domain.repositories.Repository;
 import org.codingmatters.poom.services.logging.CategorizedLogger;
 import org.codingmatters.poom.services.support.Env;
 import org.codingmatters.poom.services.support.date.UTC;
-import org.codingmatters.poom.servives.domain.entities.Entity;
+import org.codingmatters.poom.services.domain.entities.Entity;
 
 import java.time.LocalDateTime;
 import java.util.List;

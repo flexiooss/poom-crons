@@ -1,6 +1,6 @@
 package org.codingmatters.poom.services.domain.repositories;
 
-import org.codingmatters.poom.servives.domain.entities.Entity;
+import org.codingmatters.poom.services.domain.entities.Entity;
 
 import java.util.Collections;
 import java.util.LinkedList;
