@@ -4,8 +4,8 @@ import org.codingmatters.poom.crons.crontab.api.types.Task;
 import org.codingmatters.poom.crons.domain.trigger.TaskTrigger;
 import org.codingmatters.poom.crons.domain.trigger.TriggerResult;
 import org.codingmatters.poom.services.support.date.UTC;
-import org.codingmatters.poom.servives.domain.entities.Entity;
-import org.codingmatters.poom.servives.domain.entities.ImmutableEntity;
+import org.codingmatters.poom.services.domain.entities.Entity;
+import org.codingmatters.poom.services.domain.entities.ImmutableEntity;
 import org.junit.Test;
 
 import java.math.BigInteger;
