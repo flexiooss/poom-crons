@@ -212,6 +212,65 @@ public class TaskSpecValidatorTest {
         );
     }
 
+
+    @Test
+    public void givenEveryExpression__whenOneFieldProvided_and0__thenIsInvalid() throws Exception {
+        assertThat(
+                new TaskSpecValidator(TaskSpec.builder()
+                        .url("http://an.url")
+                        .scheduled(s -> s.every(e -> e.startingAt(UTC.now())
+                                .seconds(0l)
+                        ))
+                        .build()).validate(),
+                is(invalidSpec("when providing an every expression with a seconds field, must be strictly greater than 0"))
+        );
+        assertThat(
+                new TaskSpecValidator(TaskSpec.builder()
+                        .url("http://an.url")
+                        .scheduled(s -> s.every(e -> e.startingAt(UTC.now())
+                                .minutes(0l)
+                        ))
+                        .build()).validate(),
+                is(invalidSpec("when providing an every expression with a minutes field, must be strictly greater than 0"))
+        );
+        assertThat(
+                new TaskSpecValidator(TaskSpec.builder()
+                        .url("http://an.url")
+                        .scheduled(s -> s.every(e -> e.startingAt(UTC.now())
+                                .hours(0l)
+                        ))
+                        .build()).validate(),
+                is(invalidSpec("when providing an every expression with a hours field, must be strictly greater than 0"))
+        );
+        assertThat(
+                new TaskSpecValidator(TaskSpec.builder()
+                        .url("http://an.url")
+                        .scheduled(s -> s.every(e -> e.startingAt(UTC.now())
+                                .days(0l)
+                        ))
+                        .build()).validate(),
+                is(invalidSpec("when providing an every expression with a days field, must be strictly greater than 0"))
+        );
+        assertThat(
+                new TaskSpecValidator(TaskSpec.builder()
+                        .url("http://an.url")
+                        .scheduled(s -> s.every(e -> e.startingAt(UTC.now())
+                                .months(0l)
+                        ))
+                        .build()).validate(),
+                is(invalidSpec("when providing an every expression with a months field, must be strictly greater than 0"))
+        );
+        assertThat(
+                new TaskSpecValidator(TaskSpec.builder()
+                        .url("http://an.url")
+                        .scheduled(s -> s.every(e -> e.startingAt(UTC.now())
+                                .years(0l)
+                        ))
+                        .build()).validate(),
+                is(invalidSpec("when providing an every expression with a years field, must be strictly greater than 0"))
+        );
+    }
+
     @Test
     public void givenAtExpression__whenProvidingADayOfYearConstraint__thenMustBeIn1_366Range() throws Exception {
         assertThat(
@@ -416,4 +475,7 @@ public class TaskSpecValidatorTest {
                 is(validSpec())
         );
     }
+
+
+
 }

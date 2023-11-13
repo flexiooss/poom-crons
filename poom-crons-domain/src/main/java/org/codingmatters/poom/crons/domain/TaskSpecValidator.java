@@ -3,6 +3,7 @@ package org.codingmatters.poom.crons.domain;
 import org.codingmatters.poom.crons.crontab.api.types.TaskSpec;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class TaskSpecValidator {
     private final TaskSpec spec;
@@ -101,8 +102,31 @@ public class TaskSpecValidator {
             } else if(fieldDefined > 1) {
                 return TaskSpecValidation.invalidSpec("when providing an every expression, cannot provide more than one field (beside starting-at)");
             }
+
+            if(this.invalidEveryFieldValue(this.spec.opt().scheduled().every().seconds())) {
+                return TaskSpecValidation.invalidSpec("when providing an every expression with a seconds field, must be strictly greater than 0");
+            }
+            if(this.invalidEveryFieldValue(this.spec.opt().scheduled().every().minutes())) {
+                return TaskSpecValidation.invalidSpec("when providing an every expression with a minutes field, must be strictly greater than 0");
+            }
+            if(this.invalidEveryFieldValue(this.spec.opt().scheduled().every().hours())) {
+                return TaskSpecValidation.invalidSpec("when providing an every expression with a hours field, must be strictly greater than 0");
+            }
+            if(this.invalidEveryFieldValue(this.spec.opt().scheduled().every().days())) {
+                return TaskSpecValidation.invalidSpec("when providing an every expression with a days field, must be strictly greater than 0");
+            }
+            if(this.invalidEveryFieldValue(this.spec.opt().scheduled().every().months())) {
+                return TaskSpecValidation.invalidSpec("when providing an every expression with a months field, must be strictly greater than 0");
+            }
+            if(this.invalidEveryFieldValue(this.spec.opt().scheduled().every().years())) {
+                return TaskSpecValidation.invalidSpec("when providing an every expression with a years field, must be strictly greater than 0");
+            }
         }
         return TaskSpecValidation.validSpec();
+    }
+
+    private boolean invalidEveryFieldValue(Optional<Long> aLong) {
+        return aLong.isPresent() && aLong.get() <= 0L;
     }
 
     static public class TaskSpecValidation {
