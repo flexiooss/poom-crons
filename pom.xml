@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.codingmatters.poom</groupId>
         <artifactId>poom-services</artifactId>
-	<version>1.160.0-SNAPSHOT</version>
+	<version>1.160.0</version>
     </parent>
 
     <groupId>org.codingmatters.poom.crons</groupId>
     <artifactId>poom-crons</artifactId>
-    <version>1.152.0-SNAPSHOT</version>
+    <version>1.153.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Poor Man's Crontab</name>
@@ -81,7 +81,7 @@
     </modules>
 
     <properties>
-        <flexio-commons.version>1.170.0-SNAPSHOT</flexio-commons.version>
+        <flexio-commons.version>1.170.0</flexio-commons.version>
     </properties>
 
     <dependencies>
@@ -105,32 +105,32 @@
             <dependency>
                 <groupId>org.codingmatters.poom.crons</groupId>
                 <artifactId>poom-crons-api-spec</artifactId>
-                <version>1.152.0-SNAPSHOT</version>
+                <version>1.153.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.codingmatters.poom.crons</groupId>
                 <artifactId>poom-crons-api</artifactId>
-                <version>1.152.0-SNAPSHOT</version>
+                <version>1.153.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.codingmatters.poom.crons</groupId>
                 <artifactId>poom-crons-domain</artifactId>
-                <version>1.152.0-SNAPSHOT</version>
+                <version>1.153.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.codingmatters.poom.crons</groupId>
                 <artifactId>poom-crons-service</artifactId>
-                <version>1.152.0-SNAPSHOT</version>
+                <version>1.153.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.codingmatters.poom.crons</groupId>
                 <artifactId>poom-crons-client</artifactId>
-                <version>1.152.0-SNAPSHOT</version>
+                <version>1.153.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.codingmatters.poom.crons</groupId>
                 <artifactId>poom-crons-cronned-harness</artifactId>
-                <version>1.152.0-SNAPSHOT</version>
+                <version>1.153.0-SNAPSHOT</version>
             </dependency>
             <!--// BOM-->
         </dependencies>
