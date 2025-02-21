@@ -10,72 +10,49 @@
         <version>1.203.0</version>
     </parent>
 
-    <artifactId>poom-crons-service</artifactId>
-    <name>${project.groupId}:${project.artifactId}</name>
+    <groupId>org.codingmatters.poom.crons.test.apis</groupId>
+    <artifactId>poom-crons-test-apis</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>org.codingmatters.poom</groupId>
+            <artifactId>poom-services-test-support</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.codingmatters.poom.crons</groupId>
             <artifactId>poom-crons-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.codingmatters.poom.crons</groupId>
-            <artifactId>poom-crons-domain</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.codingmatters.rest</groupId>
-            <artifactId>cdm-rest-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.codingmatters.rest</groupId>
-            <artifactId>cdm-rest-undertow</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.codingmatters.rest</groupId>
-            <artifactId>cdm-rest-client-okhttp</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.codingmatters.poom</groupId>
-            <artifactId>poom-services-domain</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.codingmatters.poom</groupId>
-            <artifactId>poom-services-repository-in-memory</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.codingmatters.poom</groupId>
-            <artifactId>poom-services-test-support</artifactId>
-            <scope>test</scope>
+            <artifactId>poom-crons-client</artifactId>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-
             <plugin>
-                <groupId>org.codingmatters.rest</groupId>
-                <artifactId>cdm-rest-maven-plugin</artifactId>
+                <groupId>org.codingmatters.poom.api.test</groupId>
+                <artifactId>poom-services-api-test-generation-maven-plugin</artifactId>
                 <dependencies>
                     <dependency>
-                        <groupId>${project.groupId}</groupId>
+                        <groupId>org.codingmatters.poom.crons</groupId>
                         <artifactId>poom-crons-api-spec</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
                 <executions>
                     <execution>
-                        <id>server-side-api-gen</id>
+                        <id>test-apis-from-reactor</id>
                         <phase>generate-sources</phase>
                         <goals>
-                            <goal>generate-server-side</goal>
+                            <goal>test-api-from-reactor-descriptors</goal>
                         </goals>
-                        <configuration>
-                            <destination-package>org.codingmatters.poom.crons.crontab.api.service</destination-package>
-                            <types-package>org.codingmatters.poom.crons.crontab.api</types-package>
-                            <api-spec-resource>poom-crons-api.raml</api-spec-resource>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
