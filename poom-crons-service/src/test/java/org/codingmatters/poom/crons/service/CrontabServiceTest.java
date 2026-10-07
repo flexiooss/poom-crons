@@ -138,6 +138,18 @@ public class CrontabServiceTest {
         assertThat(hits.get(), is(1L));
     }
 
+    @Test
+    public void givenTasksBeforeAndInsideTheCatchUpWindow__whenATickIsLateByHours__thenOnlyTheLastMinutesAreCaughtUp() throws Exception {
+        this.createTaskAt(21L, 0L);
+        this.createTaskAt(22L, 30L);
+        CrontabService service = new CrontabService(this.repositoryForAccount, new String[] {"my-account"}, this.successTrigger, new ForkJoinPool(4));
+
+        service.tick(LocalDateTime.of(2026, 10, 4, 20, 0, 0));
+        service.tick(LocalDateTime.of(2026, 10, 4, 23, 0, 0));
+
+        assertThat(hits.get(), is(1L));
+    }
+
     private void createTaskAt(Long hourOfDay, Long minuteOfHour) throws RepositoryException {
         this.repositoryForAccount.apply("my-account").create(Task.builder()
                 .spec(spec -> spec
