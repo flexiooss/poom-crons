@@ -107,7 +107,11 @@ public class CrontabService {
     }
 
     private void tick() throws RepositoryException, ExecutionException, InterruptedException {
-        DateTimeTaskSelector selector = this.precision.selector(UTC.now());
+        this.tick(UTC.now());
+    }
+
+    void tick(LocalDateTime now) throws RepositoryException, ExecutionException, InterruptedException {
+        DateTimeTaskSelector selector = this.precision.selector(now);
         List<Entity<Task>> selectable = this.crontab.selectable(selector, this.pool);
         if(! selectable.isEmpty()) {
             List<Entity<Task>> executed = this.executor.execute(selectable);

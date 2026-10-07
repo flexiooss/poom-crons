@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 public class CrontabServiceTest {
@@ -112,6 +113,42 @@ public class CrontabServiceTest {
         } finally {
             service.stop();
         }
+    }
+
+    @Test
+    public void givenATaskAtAMinute__whenATickSkipsThatMinute__thenTheNextTickTriggersIt() throws Exception {
+        this.createTaskAt(20L, 1L);
+        CrontabService service = new CrontabService(this.repositoryForAccount, new String[] {"my-account"}, this.successTrigger, new ForkJoinPool(4));
+
+        service.tick(LocalDateTime.of(2026, 10, 4, 20, 0, 0));
+        service.tick(LocalDateTime.of(2026, 10, 4, 20, 2, 5));
+
+        assertThat(hits.get(), is(1L));
+    }
+
+    @Test
+    public void givenATaskAtAMinute__whenTickedTwiceDuringThatMinute__thenTheTaskIsTriggeredOnce() throws Exception {
+        this.createTaskAt(20L, 1L);
+        CrontabService service = new CrontabService(this.repositoryForAccount, new String[] {"my-account"}, this.successTrigger, new ForkJoinPool(4));
+
+        service.tick(LocalDateTime.of(2026, 10, 4, 20, 0, 0));
+        service.tick(LocalDateTime.of(2026, 10, 4, 20, 1, 0));
+        service.tick(LocalDateTime.of(2026, 10, 4, 20, 1, 40));
+
+        assertThat(hits.get(), is(1L));
+    }
+
+    private void createTaskAt(Long hourOfDay, Long minuteOfHour) throws RepositoryException {
+        this.repositoryForAccount.apply("my-account").create(Task.builder()
+                .spec(spec -> spec
+                        .url("my-url")
+                        .timezone("UTC")
+                        .scheduled(scheduled -> scheduled.at(at -> at
+                                .hourOfDay(hourOfDay)
+                                .minuteOfHours(minuteOfHour)
+                        ))
+                )
+                .build());
     }
 
 }
